@@ -15,6 +15,8 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Literal
 
+from publisher_apis import search_scopus, search_springer
+
 TOOL_SITE_PACKAGES = [
     Path.home() / "AppData" / "Roaming" / "uv" / "tools" / "paper-distill-mcp" / "Lib" / "site-packages",
     Path.home() / "AppData" / "Roaming" / "uv" / "tools" / "paper-search-mcp" / "Lib" / "site-packages",
@@ -503,14 +505,78 @@ async def search_specific_sources(
     """Directly search named databases when source control matters.
 
     Sources: arxiv, semantic, openalex, crossref, dblp, pubmed, pmc, europepmc,
-    biorxiv, medrxiv, core, openaire, doaj, base, hal, zenodo, ssrn, unpaywall.
+    biorxiv, medrxiv, core, openaire, doaj, base, hal, zenodo, ssrn, unpaywall,
+    scopus, springer.
+
+    Scopus and Springer require ELSEVIER_API_KEY and SPRINGER_API_KEY env vars.
     """
-    return await paper_search.search_papers(
-        query=query,
-        max_results_per_source=max(1, min(30, max_results_per_source)),
-        sources=sources,
-        year=year,
-    )
+    source_list = [s.strip() for s in sources.split(",")]
+    paper_search_sources = [s for s in source_list if s not in ("scopus", "springer")]
+    publisher_sources = [s for s in source_list if s in ("scopus", "springer")]
+
+    results: dict[str, list[dict[str, Any]]] = {}
+    errors: dict[str, str] = {}
+
+    year_from: str | None = None
+    year_to: str | None = None
+    if year and "-" in year:
+        parts = year.split("-")
+        if parts[0]:
+            year_to = parts[0]
+        if len(parts) > 1 and parts[1]:
+            year_from = parts[1]
+
+    # Paper-search backends
+    if paper_search_sources:
+        try:
+            ps_result = await paper_search.search_papers(
+                query=query,
+                max_results_per_source=max(1, min(30, max_results_per_source)),
+                sources=",".join(paper_search_sources),
+                year=year,
+            )
+            for key, papers in (ps_result.get("source_results") or {}).items():
+                results[key] = papers
+            if ps_result.get("errors"):
+                errors.update(ps_result["errors"])
+        except Exception as exc:
+            errors["paper_search"] = str(exc)
+
+    # Publisher API backends
+    for src in publisher_sources:
+        try:
+            if src == "scopus":
+                papers = await search_scopus(
+                    query, max_results=max_results_per_source,
+                    year_from=year_from, year_to=year_to,
+                )
+            elif src == "springer":
+                papers = await search_springer(
+                    query, max_results=max_results_per_source,
+                    year_from=year_from, year_to=year_to,
+                )
+            else:
+                continue
+            results[src] = papers
+        except Exception as exc:
+            errors[src] = str(exc)
+
+    # Flatten and merge
+    all_papers: list[dict[str, Any]] = []
+    for src_papers in results.values():
+        all_papers.extend(src_papers)
+
+    merged = _merge_papers(all_papers, max_results_per_source * max(1, len(source_list)))
+
+    return {
+        "query": query,
+        "sources_requested": source_list,
+        "sources_used": list(results.keys()),
+        "source_results": {k: v for k, v in results.items() if v},
+        "errors": errors,
+        "papers": merged,
+        "total": len(merged),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -573,7 +639,7 @@ async def read_paper(
         result["success"] = path is not None
     except Exception as exc:
         result["download_error"] = str(exc)
-            result["success"] = False
+        result["success"] = False
 
     return result
 
