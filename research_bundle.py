@@ -524,10 +524,12 @@ async def read_paper(
     doi: str = "",
     title: str = "",
     save_path: str = "./downloads",
+    use_scihub: bool = True,
 ) -> dict[str, Any]:
-    """Download and extract full text from an open-access paper.
+    """Download and extract full text from a paper.
 
     source = "auto" auto-detects from paper_id format. Explicit sources: arxiv, semantic, biorxiv, medrxiv, iacr, openaire, citeseerx, doaj, base, zenodo, hal.
+    Falls back through: native source → OA repositories → Unpaywall → Sci-Hub (when enabled).
     Returns extracted text content plus metadata.
     """
     if source == "auto":
@@ -565,14 +567,35 @@ async def read_paper(
     try:
         path = await paper_search.download_with_fallback(
             source=source, paper_id=paper_id, doi=doi, title=title,
-            save_path=save_path, use_scihub=True,
+            save_path=save_path, use_scihub=use_scihub,
         )
         result["download_path"] = path
         result["success"] = path is not None
     except Exception as exc:
         result["download_error"] = str(exc)
-        result["success"] = False
+            result["success"] = False
 
+    return result
+
+
+@mcp.tool()
+async def search_scihub(
+    identifier: str,
+    save_path: str = "./downloads",
+) -> dict[str, Any]:
+    """Download a paper via Sci-Hub by DOI, title, PMID, or URL.
+
+    Sci-Hub is a Legal gray area — use at your own risk.
+    Works best with DOIs. Falls back through multiple Sci-Hub mirrors.
+    """
+    result: dict[str, Any] = {"identifier": identifier}
+    try:
+        path = await paper_search.download_scihub(identifier, save_path=save_path)
+        result["download_path"] = path
+        result["success"] = path is not None
+    except Exception as exc:
+        result["error"] = str(exc)
+        result["success"] = False
     return result
 
 
