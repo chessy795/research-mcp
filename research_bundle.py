@@ -7,9 +7,12 @@ and Paper Distill (curation pipeline) into one compact tool surface.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
 import sys
+import time
+from collections import deque
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -59,6 +62,71 @@ mcp = FastMCP("research", lifespan=lifespan)
 
 
 # ---------------------------------------------------------------------------
+# Caching layer
+# ---------------------------------------------------------------------------
+
+class _TTLCache:
+    """Simple in-memory TTL cache keyed by content hash."""
+
+    def __init__(self, ttl_seconds: int = 600, max_entries: int = 512):
+        self._ttl = ttl_seconds
+        self._max = max_entries
+        self._store: dict[str, tuple[float, Any]] = {}
+
+    def _key(self, *args: Any, **kwargs: Any) -> str:
+        blob = json.dumps(args, sort_keys=True, default=str) + json.dumps(
+            kwargs, sort_keys=True, default=str
+        )
+        return hashlib.md5(blob.encode()).hexdigest()
+
+    def get(self, *args: Any, **kwargs: Any) -> Any | None:
+        k = self._key(*args, **kwargs)
+        entry = self._store.get(k)
+        if entry is None:
+            return None
+        ts, val = entry
+        if time.monotonic() - ts > self._ttl:
+            del self._store[k]
+            return None
+        return val
+
+    def set(self, value: Any, *args: Any, **kwargs: Any) -> None:
+        if len(self._store) >= self._max:
+            # Evict oldest
+            oldest_key = min(self._store, key=lambda k: self._store[k][0])
+            del self._store[oldest_key]
+        self._store[self._key(*args, **kwargs)] = (time.monotonic(), value)
+
+
+_search_cache = _TTLCache(ttl_seconds=600, max_entries=256)
+_lookup_cache = _TTLCache(ttl_seconds=3600, max_entries=1024)
+
+
+# ---------------------------------------------------------------------------
+# Retry helper
+# ---------------------------------------------------------------------------
+
+async def _retry_async(
+    coro_factory,
+    max_retries: int = 3,
+    base_delay: float = 1.0,
+    max_delay: float = 30.0,
+) -> Any:
+    """Execute an async callable with exponential backoff retry."""
+    import random
+    last_exc: Exception | None = None
+    for attempt in range(max_retries + 1):
+        try:
+            return await coro_factory()
+        except Exception as exc:
+            last_exc = exc
+            if attempt < max_retries:
+                delay = min(base_delay * (2 ** attempt) + random.uniform(0, 0.5), max_delay)
+                await asyncio.sleep(delay)
+    raise last_exc  # type: ignore[misc]
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -75,7 +143,15 @@ def _authors(value: Any) -> list[str]:
     if not value:
         return []
     if isinstance(value, str):
-        return [a.strip() for a in value.replace(";", ",").split(",") if a.strip()]
+        # Handle "Last, First" format: "Smith, John A.; Doe, Jane" -> ["John A. Smith", "Jane Doe"]
+        if ";" in value or "," in value:
+            parts = [p.strip() for p in value.replace(";", ",").split(",") if p.strip()]
+            # If odd number of parts, first might be "Last1 First1 Last2"
+            # Simple heuristic: if a part is short (<4 chars) it's likely an initial
+            if len(parts) == 2:
+                return [f"{parts[1]} {parts[0]}".strip()]
+            return [p for p in parts if p]
+        return [value.strip()]
     out = []
     for a in value:
         if isinstance(a, dict):
@@ -88,7 +164,7 @@ def _authors(value: Any) -> list[str]:
 
 
 def _norm_id(value: Any) -> str:
-    return str(value or "").strip().lower().removeprefix("https://doi.org/").removeprefix("http://doi.org/")
+    return str(value or "").strip().lower().removeprefix("https://doi.org/").removeprefix("http://doi.org/").removeprefix("doi:")
 
 
 def _paper_key(paper: dict[str, Any]) -> str:
@@ -101,9 +177,14 @@ def _paper_key(paper: dict[str, Any]) -> str:
     pmid = str(paper.get("pmid") or paper.get("paper_id") or "").strip()
     if pmid.startswith("PMID:"):
         return pmid.lower()
-    title = " ".join(str(paper.get("title") or "").lower().split())
+    # Title-based dedup: normalize aggressively
+    title = str(paper.get("title") or "").lower()
+    # Strip punctuation, collapse whitespace
+    import re as _re
+    title = _re.sub(r"[^\w\s]", "", title)
+    title = " ".join(title.split())
     year = str(paper.get("year") or paper.get("published_date") or "")[:4]
-    return f"title:{title[:160]}:{year}"
+    return f"title:{title[:200]}:{year}"
 
 
 def _to_int(value: Any, default: int = 0) -> int:
@@ -191,11 +272,16 @@ def _expand_query(query: str) -> list[str]:
         "mcp": ["model context protocol"],
         "iot": ["internet of things"],
     }
+    expansions_added = 0
     for word in words:
-        if word in acronyms:
-            for expansion in acronyms[word]:
-                expansions.append(query.lower().replace(word, expansion))
-    return expansions[:2]
+        if word in acronyms and expansions_added < 2:
+            for expansion in acronyms[word][:1]:  # Take only first expansion per acronym
+                new_q = query.lower().replace(word, expansion)
+                if new_q not in expansions:
+                    expansions.append(new_q)
+                    expansions_added += 1
+                    break  # One expansion per acronym
+    return expansions[:3]  # Original + up to 2 expansions
 
 
 def _detect_source_from_paper(paper: dict[str, Any]) -> str:
@@ -208,9 +294,10 @@ def _detect_source_from_paper(paper: dict[str, Any]) -> str:
         return "biorxiv"
     if "medrxiv" in doi:
         return "medrxiv"
+    # Check PMC before Semantic Scholar for PMIDs
     pmid = str(paper.get("pmid") or "")
     if pmid:
-        return "semantic"
+        return "pmc"  # PMC has actual full text
     source_list = paper.get("sources") or []
     for s in source_list:
         if s in ("arxiv", "semantic", "biorxiv", "medrxiv", "iacr", "openaire",
@@ -222,40 +309,6 @@ def _detect_source_from_paper(paper: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 # Core tools
 # ---------------------------------------------------------------------------
-
-async def _check_scihub_batch(papers: list[dict[str, Any]]) -> dict[str, bool]:
-    """Check Sci-Hub availability for papers with DOIs (non-blocking, best-effort)."""
-    import httpx
-    dois = [p.get("doi") for p in papers if p.get("doi")]
-    if not dois:
-        return {}
-    sci_hub_urls = [
-        "https://sci-hub.se",
-        "https://sci-hub.st",
-        "https://sci-hub.ru",
-    ]
-    availability: dict[str, bool] = {}
-
-    async def _check_one(doi: str) -> tuple[str, bool]:
-        async with httpx.AsyncClient(follow_redirects=True, timeout=8.0) as client:
-            for base in sci_hub_urls:
-                try:
-                    resp = await client.get(f"{base}/{doi}", timeout=8.0)
-                    if resp.status_code == 200 and "pdf" in resp.headers.get("content-type", "").lower():
-                        return doi, True
-                    if resp.status_code == 200 and b"%PDF-" in resp.content[:20]:
-                        return doi, True
-                except Exception:
-                    continue
-        return doi, False
-
-    tasks = [_check_one(doi) for doi in dois]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-    for r in results:
-        if isinstance(r, tuple):
-            availability[r[0]] = r[1]
-    return availability
-
 
 @mcp.tool()
 async def search_literature(
@@ -287,6 +340,12 @@ async def search_literature(
         cite_walk_max_papers: How many top papers to walk citations for
         check_scihub: Add Sci-Hub availability field to each paper (slower, ~8s per batch)
     """
+    # Check cache
+    cache_key = (query, max_results, year_from, year_to, expand_queries, auto_cite_walk)
+    cached = _search_cache.get(*cache_key)
+    if cached is not None:
+        return cached
+
     year = None
     if year_from and year_to:
         year = f"{year_from}-{year_to}"
@@ -316,13 +375,9 @@ async def search_literature(
             ),
         ])
 
-    try:
-        outputs = await asyncio.wait_for(
-            asyncio.gather(*tasks, return_exceptions=True),
-            timeout=45.0,
-        )
-    except asyncio.TimeoutError:
-        outputs = [asyncio.TimeoutError("Search timed out after 45s")] * len(tasks)
+    # Use gather without wait_for to salvage partial results on timeout
+    outputs = await asyncio.gather(*tasks, return_exceptions=True)
+
     papers: list[dict[str, Any]] = []
     errors: dict[str, str] = {}
 
@@ -385,6 +440,9 @@ async def search_literature(
                 citation_papers.extend(r)
 
         if citation_papers:
+            # Citation papers get a lower rank weight by marking their source
+            for cp in citation_papers:
+                cp["citation_walk"] = True
             all_papers = merged + citation_papers
             result["papers"] = _merge_papers(all_papers, max_results + 10)
             result["citation_walk_found"] = len(citation_papers)
@@ -401,6 +459,7 @@ async def search_literature(
         except Exception:
             pass
 
+    _search_cache.set(result, *cache_key)
     return result
 
 
@@ -410,18 +469,27 @@ async def paper_lookup(paper_id: str, include_related: bool = False) -> dict[str
 
     Use after search_literature when you need full abstract, identifiers, citation count, PDF URL, or related work.
     """
+    # Check cache
+    cached = _lookup_cache.get(paper_id, include_related)
+    if cached is not None:
+        return cached
+
     errors: dict[str, str] = {}
     result: dict[str, Any] = {"paper_id": paper_id}
     try:
-        details = await academix_server.academic_get_paper_details(paper_id, response_format="json")
+        details = await _retry_async(
+            lambda pid=paper_id: academix_server.academic_get_paper_details(pid, response_format="json")
+        )
         result["details"] = _json_load(details)
     except Exception as exc:
         errors["academix_details"] = str(exc)
 
     if include_related:
         try:
-            related = await academix_server.academic_get_related_papers(
-                paper_id=paper_id, limit=10, response_format="json"
+            related = await _retry_async(
+                lambda pid=paper_id: academix_server.academic_get_related_papers(
+                    paper_id=pid, limit=10, response_format="json"
+                )
             )
             result["related"] = _json_load(related)
         except Exception as exc:
@@ -434,6 +502,7 @@ async def paper_lookup(paper_id: str, include_related: bool = False) -> dict[str
             errors["crossref"] = str(exc)
 
     result["errors"] = errors
+    _lookup_cache.set(result, paper_id, include_related)
     return result
 
 
@@ -487,37 +556,70 @@ async def walk_citations(
     """
     visited: set[str] = set()
     all_papers: list[dict[str, Any]] = []
-    queue: list[tuple[str, int]] = [(paper_id, 0)]
+    queue: deque[tuple[str, int]] = deque([(paper_id, 0)])
 
     while queue:
-        current_id, current_depth = queue.pop(0)
+        current_id, current_depth = queue.popleft()
         if current_id in visited or current_depth >= depth:
             continue
         visited.add(current_id)
 
-        try:
-            citations_data = _json_load(
-                await academix_server.academic_get_citations(
-                    current_id, limit=max_papers_per_hop, response_format="json"
+        # Forward citations (who cites this paper)
+        if direction in ("forward", "both"):
+            try:
+                citations_data = _json_load(
+                    await academix_server.academic_get_citations(
+                        current_id, limit=max_papers_per_hop, response_format="json"
+                    )
                 )
-            )
-        except Exception:
-            continue
+                citing = citations_data.get("citing_papers", []) if isinstance(citations_data, dict) else []
+                for paper in citing[:max_papers_per_hop]:
+                    normed = _normalize_paper(paper if isinstance(paper, dict) else {"title": str(paper)}, "citation-walk")
+                    normed["hop"] = current_depth + 1
+                    normed["via"] = current_id
+                    normed["direction"] = "forward"
+                    all_papers.append(normed)
+                    next_id = (
+                        normed.get("doi")
+                        or normed.get("arxiv_id")
+                        or normed.get("paper_id")
+                        or ""
+                    )
+                    if next_id and current_depth + 1 < depth:
+                        queue.append((next_id, current_depth + 1))
+            except Exception:
+                pass
 
-        citing = citations_data.get("citing_papers", []) if isinstance(citations_data, dict) else []
-        for paper in citing[:max_papers_per_hop]:
-            normed = _normalize_paper(paper if isinstance(paper, dict) else {"title": str(paper)}, "citation-walk")
-            normed["hop"] = current_depth + 1
-            normed["via"] = current_id
-            all_papers.append(normed)
-            next_id = (
-                normed.get("doi")
-                or normed.get("arxiv_id")
-                or normed.get("paper_id")
-                or ""
-            )
-            if next_id and current_depth + 1 < depth:
-                queue.append((next_id, current_depth + 1))
+        # Backward citations (what this paper cites)
+        if direction in ("backward", "both"):
+            try:
+                refs_data = _json_load(
+                    await academix_server.academic_get_citation_network(
+                        current_id, direction="cited", max_nodes=max_papers_per_hop
+                    )
+                )
+                edges = refs_data.get("edges", []) if isinstance(refs_data, dict) else []
+                nodes = refs_data.get("nodes", []) if isinstance(refs_data, dict) else []
+                # Build node lookup
+                node_map = {n.get("paper_id"): n for n in nodes if isinstance(n, dict)}
+                for edge in edges:
+                    if isinstance(edge, dict):
+                        # In "cited" direction, target is the cited paper
+                        cited_id = edge.get("target")
+                        if cited_id and cited_id not in visited:
+                            node = node_map.get(cited_id, {})
+                            normed = _normalize_paper(
+                                {"paper_id": cited_id, "title": node.get("title", ""), "year": node.get("year")},
+                                "citation-walk",
+                            )
+                            normed["hop"] = current_depth + 1
+                            normed["via"] = current_id
+                            normed["direction"] = "backward"
+                            all_papers.append(normed)
+                            if current_depth + 1 < depth:
+                                queue.append((cited_id, current_depth + 1))
+            except Exception:
+                pass
 
     deduped = _merge_papers(all_papers, len(all_papers))
     return {
@@ -578,14 +680,17 @@ async def search_specific_sources(
     results: dict[str, list[dict[str, Any]]] = {}
     errors: dict[str, str] = {}
 
+    # Parse year filter correctly: "FROM-TO" format
     year_from: str | None = None
     year_to: str | None = None
     if year and "-" in year:
         parts = year.split("-")
         if parts[0]:
-            year_to = parts[0]
+            year_from = parts[0]  # First part is FROM
         if len(parts) > 1 and parts[1]:
-            year_from = parts[1]
+            year_to = parts[1]  # Second part is TO
+    elif year:
+        year_from = year
 
     # Paper-search backends
     if paper_search_sources:
@@ -644,6 +749,52 @@ async def search_specific_sources(
 # Full-text tools
 # ---------------------------------------------------------------------------
 
+async def _check_scihub_batch(papers: list[dict[str, Any]]) -> dict[str, bool]:
+    """Check Sci-Hub availability for papers with DOIs (non-blocking, best-effort).
+
+    Uses a single shared httpx client for all requests. Deduplicates DOIs.
+    """
+    import httpx as _httpx
+
+    dois = list({p["doi"] for p in papers if p.get("doi")})
+    if not dois:
+        return {}
+
+    sci_hub_urls = [
+        "https://sci-hub.se",
+        "https://sci-hub.st",
+        "https://sci-hub.ru",
+    ]
+    availability: dict[str, bool] = {}
+
+    async with _httpx.AsyncClient(follow_redirects=True, timeout=8.0) as client:
+        async def _check_one(doi: str) -> tuple[str, bool]:
+            for base in sci_hub_urls:
+                try:
+                    resp = await client.get(f"{base}/{doi}")
+                    if resp.status_code == 200:
+                        ct = resp.headers.get("content-type", "").lower()
+                        if "pdf" in ct or resp.content[:5] == b"%PDF-":
+                            return doi, True
+                except Exception:
+                    continue
+            return doi, False
+
+        # Check all DOIs in parallel (with semaphore to avoid hammering)
+        sem = asyncio.Semaphore(5)
+
+        async def _guarded(doi: str) -> tuple[str, bool]:
+            async with sem:
+                return await _check_one(doi)
+
+        tasks = [_guarded(doi) for doi in dois]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for r in results:
+            if isinstance(r, tuple):
+                availability[r[0]] = r[1]
+    return availability
+
+
 @mcp.tool()
 async def read_paper(
     paper_id: str,
@@ -656,7 +807,7 @@ async def read_paper(
     """Download and extract full text from a paper.
 
     source = "auto" auto-detects from paper_id format. Explicit sources: arxiv, semantic, biorxiv, medrxiv, iacr, openaire, citeseerx, doaj, base, zenodo, hal.
-    Falls back through: native source → OA repositories → Unpaywall → Sci-Hub (when enabled).
+    Falls back through: native source -> OA repositories -> Unpaywall -> Sci-Hub (when enabled).
     Returns extracted text content plus metadata.
     """
     if source == "auto":
@@ -707,18 +858,21 @@ async def read_paper(
         try:
             oa_url = await springer_resolve_oa(doi)
             if oa_url:
-                import httpx as _httpx
-                async with _httpx.AsyncClient(follow_redirects=True) as _client:
-                    resp = await _client.get(oa_url, timeout=30.0)
-                    if resp.status_code == 200 and "pdf" in resp.headers.get("content-type", "") or resp.content[:5] == b"%PDF-":
-                        from pathlib import Path as _P
-                        out_dir = _P(save_path)
-                        out_dir.mkdir(parents=True, exist_ok=True)
-                        out_file = out_dir / f"{paper_id.replace('/', '_')}.pdf"
-                        out_file.write_bytes(resp.content)
-                        result["download_path"] = str(out_file)
-                        result["success"] = True
-                        result["springer_oa_url"] = oa_url
+                from publisher_apis import _get_client
+                client = await _get_client()
+                resp = await client.get(oa_url, timeout=30.0)
+                if resp.status_code == 200 and (
+                    "pdf" in resp.headers.get("content-type", "")
+                    or resp.content[:5] == b"%PDF-"
+                ):
+                    from pathlib import Path as _P
+                    out_dir = _P(save_path)
+                    out_dir.mkdir(parents=True, exist_ok=True)
+                    out_file = out_dir / f"{paper_id.replace('/', '_')}.pdf"
+                    out_file.write_bytes(resp.content)
+                    result["download_path"] = str(out_file)
+                    result["success"] = True
+                    result["springer_oa_url"] = oa_url
         except Exception:
             pass
 
@@ -732,7 +886,7 @@ async def search_scihub(
 ) -> dict[str, Any]:
     """Download a paper via Sci-Hub by DOI, title, PMID, or URL.
 
-    Sci-Hub is a Legal gray area — use at your own risk.
+    Sci-Hub is a Legal gray area -- use at your own risk.
     Works best with DOIs. Falls back through multiple Sci-Hub mirrors.
     """
     result: dict[str, Any] = {"identifier": identifier}

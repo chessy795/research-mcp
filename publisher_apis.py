@@ -6,18 +6,29 @@ API keys read from environment variables.
 
 from __future__ import annotations
 
-import json
 import os
 import re
-import time
 from typing import Any
-from urllib.parse import quote
 
 import httpx
 
 SCOPUS_BASE = "https://api.elsevier.com/content/search/scopus"
 SPRINGER_BASE = "https://api.springernature.com/metadata/json"
 SPRINGER_OA_BASE = "https://api.springernature.com/openaccess/json"
+
+_shared_client: httpx.AsyncClient | None = None
+
+
+async def _get_client() -> httpx.AsyncClient:
+    """Get or create a shared httpx.AsyncClient with connection pooling."""
+    global _shared_client
+    if _shared_client is None or _shared_client.is_closed:
+        _shared_client = httpx.AsyncClient(
+            follow_redirects=True,
+            timeout=30.0,
+            limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
+        )
+    return _shared_client
 
 
 # ---------------------------------------------------------------------------
@@ -49,7 +60,7 @@ def _normalize_scopus(entry: dict[str, Any]) -> dict[str, Any]:
         title = title[0] if title else ""
 
     authors_raw = entry.get("dc:creator", "")
-    authors = [a.strip() for a in re.split(r";|,", authors_raw) if a.strip()] if authors_raw else []
+    authors = _parse_author_string(authors_raw) if authors_raw else []
 
     date_str = entry.get("prism:coverDate", "")
     year = date_str[:4] if len(date_str) >= 4 else None
@@ -98,6 +109,31 @@ def _normalize_scopus(entry: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _parse_author_string(raw: str) -> list[str]:
+    """Parse author string handling 'Last, First' and 'First Last' formats.
+
+    Scopus uses '; ' separators. Names may be 'Smith, John A.' or 'John A. Smith'.
+    Detect 'Last, First' by checking if a segment contains a comma.
+    """
+    parts = re.split(r";\s*", raw)
+    authors: list[str] = []
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        if "," in part:
+            # Could be "Last, First" or multiple "Last1, First1; Last2, First2"
+            pieces = [p.strip() for p in part.split(",")]
+            if len(pieces) == 2:
+                last, first = pieces
+                authors.append(f"{first} {last}".strip())
+            else:
+                authors.append(part)
+        else:
+            authors.append(part)
+    return authors
+
+
 async def search_scopus(
     query: str,
     max_results: int = 20,
@@ -112,7 +148,6 @@ async def search_scopus(
     if not api_key:
         return []
 
-    # Build date filter
     date_filter = ""
     if year_from and year_to:
         date_filter = f" AND PUBYEAR AFT {int(year_from) - 1} AND PUBYEAR BEF {int(year_to) + 1}"
@@ -130,10 +165,10 @@ async def search_scopus(
     }
 
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(SCOPUS_BASE, headers=_scopus_headers(), params=params, timeout=30.0)
-            resp.raise_for_status()
-            data = resp.json()
+        client = await _get_client()
+        resp = await client.get(SCOPUS_BASE, headers=_scopus_headers(), params=params)
+        resp.raise_for_status()
+        data = resp.json()
     except Exception:
         return []
 
@@ -237,10 +272,10 @@ async def search_springer(
     }
 
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(SPRINGER_BASE, params=params, timeout=30.0)
-            resp.raise_for_status()
-            data = resp.json()
+        client = await _get_client()
+        resp = await client.get(SPRINGER_BASE, params=params)
+        resp.raise_for_status()
+        data = resp.json()
     except Exception:
         return []
 
@@ -249,7 +284,7 @@ async def search_springer(
 
 
 # ---------------------------------------------------------------------------
-# Springer Open Access (resolve DOI → OA PDF link)
+# Springer Open Access (resolve DOI -> OA PDF link)
 # ---------------------------------------------------------------------------
 
 async def springer_resolve_oa(doi: str) -> str | None:
@@ -268,10 +303,10 @@ async def springer_resolve_oa(doi: str) -> str | None:
     }
 
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(SPRINGER_OA_BASE, params=params, timeout=15.0)
-            resp.raise_for_status()
-            data = resp.json()
+        client = await _get_client()
+        resp = await client.get(SPRINGER_OA_BASE, params=params)
+        resp.raise_for_status()
+        data = resp.json()
     except Exception:
         return None
 
