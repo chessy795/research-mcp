@@ -203,6 +203,15 @@ def _normalize_paper(paper: dict[str, Any], source: str) -> dict[str, Any]:
                 p[k] = v
     authors = _authors(p.get("authors"))
     year_raw = p.get("year") or str(p.get("published_date") or "")[:4]
+    # Detect OA status: explicit flag, or has pdf_url, or from OA sources
+    is_oa = (
+        p.get("is_open_access")
+        or bool(p.get("pdf_url") or p.get("open_access_url"))
+        or source in ("unpaywall", "doaj", "openaire", "base", "zenodo", "hal")
+        or (p.get("arxiv_id") or p.get("arxiv"))
+        or "biorxiv" in str(p.get("doi") or "")
+        or "medrxiv" in str(p.get("doi") or "")
+    )
     return {
         "title": p.get("title"),
         "authors": authors,
@@ -219,6 +228,7 @@ def _normalize_paper(paper: dict[str, Any], source: str) -> dict[str, Any]:
             p.get("citation_count") or p.get("citations") or p.get("cited_by_count"), 0
         ),
         "keywords": p.get("keywords") or p.get("categories"),
+        "is_open_access": bool(is_oa),
         "sources": sorted(set(s for s in [source, str(p.get("source") or source)] if s)),
     }
 
@@ -802,7 +812,7 @@ async def read_paper(
     doi: str = "",
     title: str = "",
     save_path: str = "./downloads",
-    use_scihub: bool = False,
+    use_scihub: bool = True,
 ) -> dict[str, Any]:
     """Download and extract full text from a paper.
 
