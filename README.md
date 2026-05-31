@@ -178,14 +178,12 @@ pip install -e .
 
 ### API Keys
 
-| Key | Source | Status | What It Enables |
-|-----|--------|--------|----------------|
-| Semantic Scholar | [api.semanticscholar.org](https://api.semanticscholar.org/) | ✅ Required | 10 req/sec (vs 1/sec shared) |
-| Unpaywall | Your institutional email | ✅ Recommended | OA PDF resolution |
-| Elsevier/Scopus | [dev.elsevier.com](https://dev.elsevier.com/) | ✅ Live | Scopus search (26K+ journals) |
-| Springer Nature (OA) | [dev.springernature.com](https://dev.springernature.com/) | ⚠️ OA only | OA search + PDF (Metadata key expired) |
-
-**Note on Springer:** The Springer Metadata API key has expired. `search_springer` falls back to the Open Access API, which returns fewer (but freely accessible) results. Open Access PDF resolution still works.
+| Key | Source | What It Enables |
+|-----|--------|----------------|
+| Semantic Scholar | [api.semanticscholar.org](https://api.semanticscholar.org/) | Higher rate limit (10 req/sec vs 1/sec shared) |
+| Unpaywall | Your institutional email | OA PDF resolution |
+| Elsevier/Scopus | [dev.elsevier.com](https://dev.elsevier.com/) | Scopus search |
+| Springer Nature | [dev.springernature.com](https://dev.springernature.com/) | OA search + PDF resolution |
 
 ## Usage
 
