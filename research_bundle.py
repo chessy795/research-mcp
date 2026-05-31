@@ -253,14 +253,22 @@ def _merge_papers(items: list[dict[str, Any]], limit: int, query: str | None = N
         existing = merged.get(key)
         if existing is None:
             item["source_hits"] = len(set(item.get("sources") or []))
-            # Compute relevance score from title term overlap
+            # Compute relevance score from title term overlap + citation boost
+            score = 0
             if query_terms and item.get("title"):
                 title_clean = _re.sub(r"[^\w\s]", "", item["title"].lower())
                 title_terms = set(title_clean.split())
                 overlap = len(title_terms & query_terms)
-                item["relevance_score"] = min(overlap * 3, 10)  # Each matching term = +3, max 10
-            else:
-                item["relevance_score"] = 0
+                score = min(overlap * 3, 10)
+            # Boost papers with high citation counts (top 10% of cited works get +3)
+            cites = _to_int(item.get("citation_count"))
+            if cites >= 500:
+                score = min(score + 3, 10)
+            elif cites >= 100:
+                score = min(score + 2, 10)
+            elif cites >= 50:
+                score = min(score + 1, 10)
+            item["relevance_score"] = score
             merged[key] = item
             continue
         new_sources = set(existing.get("sources") or []) | set(item.get("sources") or [])
@@ -275,15 +283,15 @@ def _merge_papers(items: list[dict[str, Any]], limit: int, query: str | None = N
         # Update relevance score if this version has better title match
         if "relevance_score" not in existing or item.get("relevance_score", 0) > existing.get("relevance_score", 0):
             existing["relevance_score"] = item.get("relevance_score", 0)
-    # Rank by: source_hits, relevance_score, has_abstract, year recency, then citation as tiebreaker
+    # Rank by: source_hits, relevance_score, has_abstract, citation_count, then year as tiebreaker
     ranked = sorted(
         merged.values(),
         key=lambda p: (
             _to_int(p.get("source_hits")),
             _to_int(p.get("relevance_score")),
             1 if p.get("abstract") else 0,
-            _to_int(p.get("year")),
             min(_to_int(p.get("citation_count")), 5000),
+            _to_int(p.get("year")),
         ),
         reverse=True,
     )
@@ -357,8 +365,8 @@ async def search_literature(
     year_to: int | None = None,
     expand_queries: bool = True,
     auto_cite_walk: bool = True,
-    cite_walk_depth: int = 1,
-    cite_walk_max_papers: int = 3,
+    cite_walk_depth: int = 2,
+    cite_walk_max_papers: int = 5,
     check_scihub: bool = False,
     compact: bool = False,
 ) -> dict[str, Any]:
@@ -369,10 +377,13 @@ async def search_literature(
     Excludes noisy sources (bioRxiv, medRxiv) by default — use search_specific_sources for those.
 
     Returns paper metadata (title, authors, year, abstract, DOI, citation count, is_open_access).
-    Includes BOTH seminal older papers AND recent papers. Do NOT filter by year unless the
-    user specifically requests it — seminal papers from 1990-2017 are often more important
-    than recent ones.
+    Ranks results by: multi-source agreement, relevance score (title overlap + citation boost),
+    abstract availability, citation count, then year. This biases toward seminal/high-impact
+    papers over recent low-citation preprints. Do NOT filter by year unless the user specifically
+    requests it — seminal papers from 1990-2017 are often more important than recent ones.
 
+    Automatically walks BOTH forward citations (who cited these papers)
+    AND backward references (what these papers cited) to surface foundational works.
     Use extract_sections to read specific sections from papers (saves ~80% tokens vs full text).
 
     Args:
@@ -381,7 +392,7 @@ async def search_literature(
         year_from: Filter papers from this year — ONLY set if user explicitly asks for recency
         year_to: Filter papers until this year — ONLY set if user explicitly asks for recency
         expand_queries: Auto-expand acronyms (LLM->large language model)
-        compact: Return minimal data (no abstracts, shorter citation) — saves ~70% tokens
+        compact: Return minimal data (title, authors, year, doi, venue, citation_count, relevance_score only) — saves ~60% tokens
         auto_cite_walk: Auto-walk citation graph for top results
         cite_walk_depth: Citation graph walk depth (1=direct citations only)
         cite_walk_max_papers: How many top papers to walk citations for
@@ -541,11 +552,69 @@ async def search_literature(
             except Exception:
                 return []
 
-        # Fetch from both Semantic Scholar and OpenAlex in parallel
+        async def _fetch_references_oa(pid: str) -> list[dict[str, Any]]:
+            """Fetch references (backward) from OpenAlex."""
+            try:
+                from publisher_apis import _get_client
+                client = await _get_client()
+                oa_email = os.environ.get("UNPAYWALL_EMAIL", "research@example.com")
+                doi = pid if pid.startswith("10.") else ""
+                if not doi:
+                    return []
+                resp = await client.get(
+                    f"https://api.openalex.org/works/doi:{doi}",
+                    params={"mailto": oa_email},
+                )
+                if resp.status_code != 200:
+                    return []
+                data = resp.json()
+                refs = data.get("referenced_works", [])
+                if not refs:
+                    return []
+                # Batch fetch referenced works
+                ids_param = "|".join(refs[:10])
+                ref_resp = await client.get(
+                    "https://api.openalex.org/works",
+                    params={"filter": f"ids:{ids_param}", "per_page": 10, "mailto": oa_email},
+                )
+                if ref_resp.status_code != 200:
+                    return []
+                results = ref_resp.json().get("results", [])
+                papers = []
+                for r in results[:5]:
+                    authors = []
+                    for a in (r.get("authorships") or [])[:5]:
+                        name = (a.get("author") or {}).get("display_name", "")
+                        if name:
+                            authors.append(name)
+                    abstract_inv = r.get("abstract_inverted_index")
+                    abstract = ""
+                    if abstract_inv:
+                        positions = []
+                        for word, pos_list in abstract_inv.items():
+                            for pos in pos_list:
+                                positions.append((pos, word))
+                        positions.sort()
+                        abstract = " ".join(w for _, w in positions)
+                    papers.append({
+                        "title": r.get("title", ""),
+                        "authors": authors,
+                        "year": (r.get("publication_date") or "")[:4] or None,
+                        "doi": r.get("doi", ""),
+                        "abstract": abstract,
+                        "citation_count": _to_int((r.get("cited_by_count") or 0)),
+                        "url": r.get("id", ""),
+                    })
+                return [_normalize_paper(p, "reference-walk-oa") for p in papers]
+            except Exception:
+                return []
+
+        # Fetch forward (citing) and backward (references) in parallel
         citation_tasks = []
         for pid in walk_ids:
             citation_tasks.append(_fetch_citations_s2(pid))
             citation_tasks.append(_fetch_citations_oa(pid))
+            citation_tasks.append(_fetch_references_oa(pid))
 
         citation_results = await asyncio.gather(
             *citation_tasks, return_exceptions=True,
@@ -576,8 +645,11 @@ async def search_literature(
             pass
 
     if compact:
+        KEEP = {"title", "authors", "year", "doi", "venue", "citation_count", "relevance_score", "source_hits", "sources", "is_open_access"}
         for p in result.get("papers", []):
-            p.pop("abstract", None)
+            for k in list(p.keys()):
+                if k not in KEEP:
+                    del p[k]
             p["compact"] = True
     _search_cache.set(result, *cache_key)
     return result
