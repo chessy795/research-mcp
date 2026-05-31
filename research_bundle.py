@@ -450,9 +450,10 @@ async def search_literature(
     if auto_cite_walk and merged:
         walk_ids = []
         for p in merged[:cite_walk_max_papers]:
-            pid = p.get("doi") or p.get("arxiv_id") or p.get("paper_id")
-            if pid:
-                walk_ids.append(pid)
+            if p.get("source_hits", 0) >= 2:  # Only walk papers found by multiple sources
+                pid = p.get("doi") or p.get("arxiv_id") or p.get("paper_id")
+                if pid:
+                    walk_ids.append(pid)
 
         async def _fetch_citations_s2(pid: str) -> list[dict[str, Any]]:
             """Fetch citing papers from Semantic Scholar."""
