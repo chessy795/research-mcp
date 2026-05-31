@@ -496,84 +496,6 @@ async def search_literature(
 
 
 @mcp.tool()
-async def paper_lookup(paper_id: str, include_related: bool = False) -> dict[str, Any]:
-    """Get detailed metadata for a paper by DOI, arXiv ID, OpenAlex ID, Semantic Scholar ID, or title-like ID.
-
-    Use after search_literature when you need full abstract, identifiers, citation count, PDF URL, or related work.
-    """
-    # Check cache
-    cached = _lookup_cache.get(paper_id, include_related)
-    if cached is not None:
-        return cached
-
-    errors: dict[str, str] = {}
-    result: dict[str, Any] = {"paper_id": paper_id}
-    try:
-        details = await _retry_async(
-            lambda pid=paper_id: academix_server.academic_get_paper_details(pid, response_format="json")
-        )
-        result["details"] = _json_load(details)
-    except Exception as exc:
-        errors["academix_details"] = str(exc)
-
-    if include_related:
-        try:
-            related = await _retry_async(
-                lambda pid=paper_id: academix_server.academic_get_related_papers(
-                    paper_id=pid, limit=10, response_format="json"
-                )
-            )
-            result["related"] = _json_load(related)
-        except Exception as exc:
-            errors["related"] = str(exc)
-
-    if not result.get("details") or result.get("details") == {"raw": "No paper found"}:
-        try:
-            result["crossref"] = await paper_search.get_crossref_paper_by_doi(paper_id)
-        except Exception as exc:
-            errors["crossref"] = str(exc)
-
-    result["errors"] = errors
-    _lookup_cache.set(result, paper_id, include_related)
-    return result
-
-
-@mcp.tool()
-async def citation_intelligence(
-    paper_id: str,
-    mode: Literal["citing", "references", "related", "network", "all"] = "all",
-    limit: int = 20,
-) -> dict[str, Any]:
-    """Explore citation context for a paper: citing papers, references, related work, or network graph."""
-    result: dict[str, Any] = {"paper_id": paper_id, "mode": mode, "errors": {}}
-    if mode in ("citing", "all"):
-        try:
-            result["citing"] = _json_load(
-                await academix_server.academic_get_citations(paper_id, limit=limit, response_format="json")
-            )
-        except Exception as exc:
-            result["errors"]["citing"] = str(exc)
-    if mode in ("related", "all"):
-        try:
-            result["related"] = _json_load(
-                await academix_server.academic_get_related_papers(paper_id, limit=limit, response_format="json")
-            )
-        except Exception as exc:
-            result["errors"]["related"] = str(exc)
-    if mode in ("references", "network", "all"):
-        direction = "cited" if mode == "references" else "both"
-        try:
-            result["network"] = _json_load(
-                await academix_server.academic_get_citation_network(
-                    paper_id, direction=direction, max_nodes=max(10, min(200, limit * 2))
-                )
-            )
-        except Exception as exc:
-            result["errors"]["network"] = str(exc)
-    return result
-
-
-@mcp.tool()
 async def walk_citations(
     paper_id: str,
     direction: Literal["forward", "backward", "both"] = "forward",
@@ -751,49 +673,74 @@ async def export_references(
 
 
 @mcp.tool()
-async def search_by_title(
-    title: str,
+async def paper_lookup(
+    query: str,
     max_results: int = 5,
 ) -> dict[str, Any]:
-    """Find a paper by title. Searches across Semantic Scholar, CrossRef, and arXiv.
+    """Find a paper by DOI, arXiv ID, Semantic Scholar ID, or title.
 
-    Use when you have a paper title but no DOI or arXiv ID.
-    Returns the best matching papers with metadata.
+    Auto-detects whether query is an ID or title string.
+    IDs (10.xxxx/..., 2305.14283, etc.) → direct lookup.
+    Title strings → search across Semantic Scholar and CrossRef.
+    Returns detailed metadata including abstract, authors, citation count.
     """
     results: list[dict[str, Any]] = []
     errors: dict[str, str] = {}
 
-    # Search Semantic Scholar by title
-    try:
-        s2_results = await _retry_async(
-            lambda: academix_server.academic_search_papers(
-                query=f'title:"{title}"',
-                sort="relevance",
-                limit=max_results,
-                response_format="json",
-            )
-        )
-        data = _json_load(s2_results)
-        for p in data.get("papers", []) if isinstance(data, dict) else []:
-            results.append(_normalize_paper(p, "semantic-scholar-title"))
-    except Exception as exc:
-        errors["semantic_scholar"] = str(exc)
+    # Detect if query is a DOI, arXiv ID, or title
+    q = query.strip()
+    is_id = (
+        q.startswith("10.")  # DOI
+        or q.startswith("arxiv:")  # arXiv prefix
+        or (q.startswith("http") and "doi.org" in q)  # DOI URL
+        or (q.replace(".", "").replace("-", "").isdigit() and len(q) > 5)  # pure numeric ID
+        or q.startswith("W")  # OpenAlex ID
+    )
 
-    # Search CrossRef by title
-    try:
-        cr_results = await paper_search.get_crossref_paper_by_doi(title)
-        if cr_results and isinstance(cr_results, dict):
-            results.append(_normalize_paper(cr_results, "crossref-title"))
-    except Exception:
-        pass
+    if is_id:
+        # Direct lookup by ID
+        try:
+            details = await _retry_async(
+                lambda pid=q: academix_server.academic_get_paper_details(pid, response_format="json")
+            )
+            parsed = _json_load(details)
+            if isinstance(parsed, dict) and parsed.get("title"):
+                results.append(_normalize_paper(parsed, "academix-lookup"))
+        except Exception as exc:
+            errors["academix_details"] = str(exc)
+
+        # Fallback to CrossRef if academix failed
+        if not results:
+            try:
+                cr = await paper_search.get_crossref_paper_by_doi(q)
+                if cr and isinstance(cr, dict):
+                    results.append(_normalize_paper(cr, "crossref-lookup"))
+            except Exception:
+                pass
+    else:
+        # Search by title across Semantic Scholar + CrossRef
+        try:
+            s2_results = await _retry_async(
+                lambda t=q: academix_server.academic_search_papers(
+                    query=f'title:"{t}"', sort="relevance",
+                    limit=max_results, response_format="json",
+                )
+            )
+            data = _json_load(s2_results)
+            for p in data.get("papers", []) if isinstance(data, dict) else []:
+                results.append(_normalize_paper(p, "semantic-scholar-title"))
+        except Exception as exc:
+            errors["semantic_scholar"] = str(exc)
+
+        try:
+            cr_results = await paper_search.get_crossref_paper_by_doi(q)
+            if cr_results and isinstance(cr_results, dict):
+                results.append(_normalize_paper(cr_results, "crossref-title"))
+        except Exception:
+            pass
 
     merged = _merge_papers(results, max_results)
-    return {
-        "query": title,
-        "results_found": len(merged),
-        "errors": errors,
-        "papers": merged,
-    }
+    return {"query": query, "results_found": len(merged), "errors": errors, "papers": merged}
 
 
 @mcp.tool()
@@ -1080,27 +1027,6 @@ async def read_paper(
     return result
 
 
-@mcp.tool()
-async def search_scihub(
-    identifier: str,
-    save_path: str = "./downloads",
-) -> dict[str, Any]:
-    """Download a paper via Sci-Hub by DOI, title, PMID, or URL.
-
-    Sci-Hub is a Legal gray area -- use at your own risk.
-    Works best with DOIs. Falls back through multiple Sci-Hub mirrors.
-    """
-    result: dict[str, Any] = {"identifier": identifier}
-    try:
-        path = await paper_search.download_scihub(identifier, save_path=save_path)
-        result["download_path"] = path
-        result["success"] = path is not None
-    except Exception as exc:
-        result["error"] = str(exc)
-        result["success"] = False
-    return result
-
-
 def _extract_sections_from_text(text: str, sections: list[str]) -> dict[str, str]:
     """Extract specific sections from paper full text using heading patterns."""
     import re
@@ -1301,69 +1227,6 @@ async def compare_papers(
 # ---------------------------------------------------------------------------
 # Curation tools
 # ---------------------------------------------------------------------------
-
-@mcp.tool()
-async def paper_distill_pipeline(
-    action: Literal[
-        "setup",
-        "init_session",
-        "load_context",
-        "add_topic",
-        "configure",
-        "refresh_pool",
-        "finalize_review",
-        "collect",
-        "rank",
-        "filter_duplicates",
-        "pool_status",
-        "prepare_review",
-        "prepare_summarize",
-        "list_topics",
-    ],
-    papers: list[dict[str, Any]] | None = None,
-    top_n: int = 10,
-    custom_focus: str = "",
-    payload: dict[str, Any] | None = None,
-) -> Any:
-    """Paper Distill curation and workflow actions.
-
-    Curation: rank, filter_duplicates, pool_status, prepare_review, prepare_summarize, list_topics
-    Workflow: setup, init_session, load_context, add_topic, configure, refresh_pool, finalize_review, collect
-
-    Use only when managing paper collections or distillation workflows.
-    For ordinary search, use search_literature instead.
-    """
-    payload = payload or {}
-    if action == "setup":
-        return paper_distill.setup()
-    if action == "init_session":
-        return paper_distill.init_session(**payload)
-    if action == "load_context":
-        return paper_distill.load_session_context(**payload)
-    if action == "add_topic":
-        return paper_distill.add_topic(**payload)
-    if action == "configure":
-        return paper_distill.configure(**payload)
-    if action == "refresh_pool":
-        return await paper_distill.pool_refresh(**payload)
-    if action == "finalize_review":
-        return paper_distill.finalize_review(**payload)
-    if action == "collect":
-        return paper_distill.collect(**payload)
-    if action == "rank":
-        return paper_distill.rank_papers(papers or [], top_n=top_n)
-    if action == "filter_duplicates":
-        return paper_distill.filter_duplicates(papers or [])
-    if action == "pool_status":
-        return paper_distill.pool_status()
-    if action == "prepare_review":
-        return paper_distill.prepare_review()
-    if action == "prepare_summarize":
-        return paper_distill.prepare_summarize(custom_focus=custom_focus)
-    if action == "list_topics":
-        return paper_distill.manage_topics(action="list")
-    raise ValueError(f"Unsupported action: {action}")
-
 
 def main() -> None:
     mcp.run()
