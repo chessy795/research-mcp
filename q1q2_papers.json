@@ -1,0 +1,359 @@
+{
+  "query1": {
+    "query": "LLM feedback accuracy category-level writing",
+    "mcp1_academix": {
+      "source": "openalex",
+      "returned_count": 15,
+      "total_results": 14782,
+      "new_papers": [],
+      "note": "All 15 returned papers are generic LLM/AI-in-education papers (ChatGPT healthcare, LLaMA, SWOT analysis, etc.). None are specifically about L2 writing feedback accuracy at the category level."
+    },
+    "mcp2_papersearch": {
+      "source": "unified (arxiv, pubmed, biorxiv, medrxiv, semantic, crossref, openalex, pmc, core, europepmc, openaire)",
+      "returned_count": 43,
+      "new_papers": [
+        {
+          "title": "AI-Driven Intelligent Feedback System for Enhancing Self-Assessment Accuracy in Higher Education Writing",
+          "authors": "Shih-Yeh Chen; Wei-Cheng Chen",
+          "year": 2025,
+          "doi": "10.1111/exsy.70184",
+          "journal": "Expert Systems",
+          "abstract": "Uses BERT/RoBERTa to support personalised writing evaluation. Quasi-experimental design found no significant group-level difference in posttest SAA, but interaction analysis revealed compensatory effect: students with lower baseline accuracy benefited substantially from LLMF, while higher-baseline students showed limited change.",
+          "proposed_section": "§1.3 Accuracy and Quality of LLM-Generated Feedback OR §1.2 Student Response",
+          "finding": "LLM feedback has a compensatory effect — helps low-accuracy students more than high-accuracy ones. Directly relevant to the r=.816 sobering implication from Bai & Hu (2017)."
+        },
+        {
+          "title": "Continuation Wing 1.0 - A Deepseek-Assisted Feedback Platform for Continuation Writing Assessment",
+          "authors": "Zheng Li; Bao Chen; Ziying Ling; Rixi Wu; Da Ling",
+          "year": 2025,
+          "doi": "10.1145/3775073.3775188",
+          "abstract": "DeepSeek-assisted continuation writing platform with interpretable scoring (semantic matching, grammatical error density, discourse coherence). QWK 0.81 (Content), 0.79 (Language). Eight-week intervention showed clear gains in content, language accuracy, and coherence.",
+          "proposed_section": "§3.3 Study 1 or §1.1",
+          "finding": "Classroom-speed DeepSeek platform for continuation writing; demonstrates that interpretable scoring + targeted feedback improves L2 writing outcomes. Supports multi-LLM design logic."
+        },
+        {
+          "title": "Raising the linguistic accuracy level of advanced L2 writers with written corrective feedback",
+          "authors": "John Bitchener; Ute Knoch",
+          "year": 2010,
+          "doi": "10.1016/j.jslw.2010.10.002",
+          "journal": "Journal of Second Language Writing",
+          "citations": 227,
+          "abstract": "No abstract in source, but title indicates study on written corrective feedback effects on advanced L2 writers' linguistic accuracy.",
+          "proposed_section": "§1.3 Accuracy and Quality",
+          "finding": "Key AWE corrective feedback study. Directly relevant to the category-level accuracy lineage (Dikli & Bleyle 2014 → Lavolette et al. 2015 → Bai & Hu 2017) that the proposal builds on."
+        },
+        {
+          "title": "LLM feedback for academic writing: Effects on students' performance and engagement",
+          "authors": "Robert Glüsing; Johanna Fleckenstein; Fabian Schmidt; Jens Möller",
+          "year": 2025,
+          "doi": "10.2139/ssrn.5445319",
+          "abstract": "No abstract in source (SSRN preprint).",
+          "proposed_section": "§1.2 or §1.3",
+          "finding": "Directly examines LLM feedback effects on academic writing performance and engagement. Fleckenstein co-author — connects to the meta-analysis already cited."
+        },
+        {
+          "title": "Emotional Engagement Prediction and LLM Feedback in Smart Learning Environments",
+          "authors": "Miada Almasre; Wafaa Alsaggaf; Norah Al-Malki; Hani Brdesee",
+          "year": 2025,
+          "doi": "10.1007/s40593-025-00504-7",
+          "abstract": "No abstract available in source.",
+          "proposed_section": "§1.2 or §1.4",
+          "finding": "Links emotional engagement with LLM feedback — relevant to Liu & Liang (2026) finding that AI's strongest effect is emotional (d=0.628)."
+        },
+        {
+          "title": "Navigating AI feedback in translation training: how text type, proficiency, and attitude shape students' acceptance behaviors",
+          "authors": "S. Chen; J. Lou",
+          "year": 2026,
+          "doi": "10.3389/frai.2026.1727544",
+          "abstract": "78 translation students, 68.2% acceptance rate of LLM suggestions. Acceptance shaped by text type (technical/news highest, literary/tourism lowest). Higher-proficiency students more critical. Rejection triggered deeper engagement — self-revision, external verification, AI dialogue.",
+          "proposed_section": "§1.4 Student Response and Uptake",
+          "finding": "68.2% acceptance rate for AI feedback; rejection triggers deeper cognitive processing than acceptance. Directly relevant to the six-category uptake taxonomy proposal."
+        },
+        {
+          "title": "LLMs as Writing Assistants: Exploring Perspectives on Sense of Ownership and Reasoning",
+          "authors": "Azmine Toushik Wasi; Mst Rafia Islam; Raima Islam",
+          "year": 2024,
+          "doi": "10.1145/3690712.3690723",
+          "abstract": "Survey examining sense of ownership in writing with LLM assistants. Found users credit LLMs more in creative tasks, and may not claim ownership of LLM-generated content but freely claim authorship.",
+          "proposed_section": "§1.2 or §1.4",
+          "finding": "Addresses authorship/ownership perceptions — related to voice homogenization concern (Yang & Li, 2024; Helm & Hesse, 2026) but from student perspective."
+        },
+        {
+          "title": "Voice Interaction With Conversational AI Could Facilitate Thoughtful Reflection and Substantive Revision in Writing",
+          "authors": "Jiho Kim; Philippe Laban; Xiang 'Anthony' Chen; Kenneth C. Arnold",
+          "year": 2025,
+          "abstract": "Proposes voice-based interaction with LLM-powered conversational agents for writing feedback. Argues voice can encourage engagement with higher-order concerns, iterative reflection, and reduce cognitive load vs text.",
+          "proposed_section": "§1.4 or §3.5 Study 3 design",
+          "finding": "Voice interaction as alternative feedback modality — potentially relevant for remote data collection design."
+        },
+        {
+          "title": "Individual differences and written corrective feedback: exploring the effects of direct and coded feedback on Chinese EFL learners' writing accuracy",
+          "authors": "Yingying Li",
+          "year": 2014,
+          "doi": "10.5353/th_991043982880703414",
+          "abstract": "HKU PhD dissertation on individual differences in WCF effects.",
+          "proposed_section": "§1.3 or §1.4",
+          "finding": "Individual differences moderate WCF effectiveness — relevant to Study 3 moderation analysis (proficiency, AIFL, self-efficacy)."
+        }
+      ]
+    }
+  },
+  "query2": {
+    "query": "peer teacher feedback comparison accuracy second language writing",
+    "mcp1_academix": {
+      "source": "openalex",
+      "returned_count": 15,
+      "total_results": 3056,
+      "note": "Query in file is 'AI feedback uptake revision quality meta-analysis' but returned mostly medical/irrelevant papers. One relevant paper found: Banihashem et al. (2024).",
+      "new_papers": [
+        {
+          "title": "Feedback sources in essay writing: peer-generated or AI-generated feedback?",
+          "authors": "Seyyed Kazem Banihashem; Nafiseh Taghizadeh Kerman; Omid Noroozi; Jewoong Moon; Hendrik Drachsler",
+          "year": 2024,
+          "doi": "10.1186/s41239-024-00455-4",
+          "journal": "International Journal of Educational Technology in Higher Education",
+          "citations": 210,
+          "abstract": "Compared ChatGPT-generated feedback with peer feedback for argumentative essay writing among 74 Dutch graduate students. ChatGPT provided more descriptive feedback; peers provided feedback including information. Significant difference between the two sources.",
+          "proposed_section": "§1.1 Three-way comparison OR §3.3 Study 1",
+          "finding": "Direct comparison of peer vs AI feedback quality in essay writing. Supports the three-way comparison design in Study 1."
+        },
+        {
+          "title": "Impact of ChatGPT on ESL students' academic writing skills: a mixed methods intervention study",
+          "authors": "Santosh Mahapatra",
+          "year": 2024,
+          "doi": "10.1186/s40561-024-00295-9",
+          "journal": "Smart Learning Environments",
+          "citations": 270,
+          "abstract": "Found significant positive impact of ChatGPT on ESL students' academic writing skills. Students' perceptions overwhelmingly positive.",
+          "proposed_section": "§1.2 or §1.3",
+          "finding": "ALREADY IN PROPOSAL reference list (Mahapatra, 2024). Included here for completeness."
+        }
+      ]
+    },
+    "mcp2_papersearch": {
+      "source": "unified (arxiv, pubmed, biorxiv, medrxiv, semantic, crossref, openalex, pmc, core, europepmc, openaire)",
+      "returned_count": 43,
+      "new_papers": [
+        {
+          "title": "Exposía: Teaching and Assessment of Academic Writing Skills for Research Project Proposals and Peer Feedback",
+          "authors": "Dennis Zyska; Alla Rozovskaya; Ilia Kuznetsov; Iryna Gurevych",
+          "year": 2026,
+          "abstract": "First public dataset connecting writing and feedback in higher education. Includes student research proposals and peer/instructor feedback. Benchmarked LLMs on automated scoring of proposals and reviews. Closed-source models outperform open-weight models.",
+          "proposed_section": "§1.4 Student Response and Uptake OR §3.3 Study 1",
+          "finding": "New dataset connecting writing and feedback. LLM benchmarking for scoring — relevant to Study 2 classifier design."
+        },
+        {
+          "title": "Effects of teacher-scaffolded and self-scaffolded corrective feedback compared to direct corrective feedback on grammatical accuracy in English L2 writing",
+          "authors": "Jill A. Boggs",
+          "year": 2019,
+          "doi": "10.1016/j.jslw.2019.100671",
+          "journal": "Journal of Second Language Writing",
+          "citations": 29,
+          "abstract": "No abstract in source.",
+          "proposed_section": "§1.3 Accuracy or §1.4 Uptake",
+          "finding": "Compares teacher-scaffolded, self-scaffolded, and direct corrective feedback on L2 grammatical accuracy. Directly relevant to the feedback-type comparison in Study 1."
+        },
+        {
+          "title": "The effect of peer and teacher feedback on student writing",
+          "authors": "Trena M. Paulus",
+          "year": 1999,
+          "doi": "10.1016/s1060-3743(99)80117-9",
+          "journal": "Journal of Second Language Writing",
+          "citations": 251,
+          "abstract": "No abstract in source.",
+          "proposed_section": "§1.1 or §3.3",
+          "finding": "Classic peer vs teacher feedback study in JSLW. Foundational reference for the three-way comparison."
+        },
+        {
+          "title": "Mediating L2 writing revision: The impact of teacher-moderated ChatGPT feedback on L2 accuracy and lexical diversity",
+          "authors": "Marilize Pretorius; Jennifer Thewissen",
+          "year": 2026,
+          "doi": "10.1016/j.jslw.2026.101286",
+          "journal": "Journal of Second Language Writing",
+          "abstract": "No abstract in source.",
+          "proposed_section": "§3.3 Study 1 (hybrid feedback condition)",
+          "finding": "Teacher-moderated ChatGPT feedback effects on L2 accuracy and lexical diversity. Directly supports the hybrid feedback condition in Study 1."
+        },
+        {
+          "title": "Using teacher-supported peer feedback to develop student feedback literacy in L2 writing: An instructional model",
+          "authors": "Maggie Ma",
+          "year": 2023,
+          "doi": "10.32038/frsl.2023.01.05",
+          "journal": "Feedback Research in Second Language",
+          "abstract": "Proposes an instructional model of teacher-supported peer feedback for developing student feedback literacy from a self-regulatory perspective.",
+          "proposed_section": "§1.5 Feedback Literacy",
+          "finding": "Teacher-supported peer feedback model for developing feedback literacy. Links to Carless & Boud (2018) framework already in proposal."
+        },
+        {
+          "title": "A comparative study of peer and teacher feedback in a Chinese EFL writing class",
+          "authors": "Miao Yang; Richard Badger; Zhen Yu",
+          "year": 2006,
+          "doi": "10.1016/j.jslw.2006.09.004",
+          "journal": "Journal of Second Language Writing",
+          "citations": 366,
+          "abstract": "No abstract in source.",
+          "proposed_section": "§1.1 or §3.3 Study 1",
+          "finding": "Highly cited (366) peer vs teacher feedback comparison in Chinese EFL context. Directly relevant to the three-way comparison design."
+        },
+        {
+          "title": "Peer feedback and Chinese medical students' English academic writing development: a longitudinal intervention study",
+          "authors": "Chenze Wu; Yao-Wu Zhang; Albert W. Li",
+          "year": 2023,
+          "doi": "10.1186/s12909-023-04574-w",
+          "journal": "BMC Medical Education",
+          "citations": 24,
+          "abstract": "Longitudinal intervention showing peer feedback significantly improved Chinese medical students' English academic writing (overall score, task response, coherence, lexical resource, grammar). Effects retained at 6-week delayed post-test.",
+          "proposed_section": "§1.4 Student Response and Uptake",
+          "finding": "Peer feedback effectiveness for L2 medical academic writing with delayed post-test durability — relevant to Study 3 delayed post-test design."
+        },
+        {
+          "title": "Beyond the monorail perspective: constructing a dual-role engagement framework in peer feedback for second language oral communication",
+          "authors": "W. He; X. Jin",
+          "year": 2026,
+          "doi": "10.3389/fpsyg.2026.1804403",
+          "abstract": "Proposes dual-role engagement framework for peer feedback: learners as both feedback providers and recipients. Supported by sociocultural theory and cooperative learning theory.",
+          "proposed_section": "§1.4 or §1.5",
+          "finding": "Dual-role framework for peer feedback engagement. Complements Lin & Yu (2025) dual-role framework already cited in proposal."
+        },
+        {
+          "title": "The Impact of Positive Peer Feedback on Second Language Writing Accuracy",
+          "authors": "(multiple Turkish researchers)",
+          "year": 2021,
+          "doi": "10.7827/turkishstudies.47713",
+          "abstract": "Compared direct focused peer feedback vs direct focused teacher feedback on L2 writing accuracy (tense uptake) with 58 Turkish EFL students. Both feedback types had significant effects on writing accuracy.",
+          "proposed_section": "§1.3 or §3.3",
+          "finding": "Peer vs teacher feedback comparison for L2 writing accuracy. Supports the three-way comparison rationale."
+        },
+        {
+          "title": "Using Large Language Models to Provide Explanatory Feedback to Human Tutors",
+          "authors": "Jionghao Lin; Danielle R. Thomas; Feifei Han; Shivang Gupta; Wei Tan; Ngoc Dang Nguyen; Kenneth R. Koedinger",
+          "year": 2023,
+          "abstract": "Uses LLM-facilitated named entity recognition to provide real-time explanatory feedback to tutors during online lessons on how to give effective praise.",
+          "proposed_section": "§1.2 or §1.3",
+          "finding": "LLM feedback for tutor training — not L2 writing directly but shows LLM-as-explanatory-feedback approach."
+        }
+      ]
+    }
+  },
+  "targeted_papers_check": {
+    "Developing a comprehensive uptake taxonomy for L2 writing feedback (Zhang & Hyland, 2023)": {
+      "found_in_mcp_files": false,
+      "in_proposal": false,
+      "note": "Not found in any of the 4 MCP files. Proposal cites Zhang & Hyland (2018) and Zhang (2020) — different papers. If this paper exists, it was not retrieved by either search query."
+    },
+    "AI-Driven Intelligent Feedback System for Enhancing Self-Assessment Accuracy (Chen & Chen, 2025)": {
+      "found_in_mcp_files": true,
+      "source": "Q1 MCP2 Papersearch (semantic)",
+      "in_proposal": false,
+      "note": "FOUND. Published in Expert Systems (doi: 10.1111/exsy.70184). Uses BERT/RoBERTa for self-assessment accuracy. Compensatory effect for low-accuracy students."
+    },
+    "peer vs teacher feedback comparison papers (Yu & Lee 2016, Cho & MacArthur 2011, Zhao 2010, Diab 2011, Patchan & Schunn 2015)": {
+      "found_in_mcp_files": false,
+      "note": "None of these specific papers were retrieved by either search query. However, other peer-vs-teacher papers WERE found: Paulus (1999), Yang, Badger & Yu (2006), Banihashem et al. (2024)."
+    },
+    "When and How Does LLM-Generated Feedback Surpass Traditional AWE? (Zhang, Hong & Qi 2025)": {
+      "found_in_mcp_files": true,
+      "source": "Q1 MCP2 Papersearch (crossref, two versions)",
+      "in_proposal": true,
+      "note": "Already in proposal as Zhang, D.-W., Hong, X., & Qi, Y. (2025). Two copies found (single-author preprint and three-author final)."
+    },
+    "AWE feedback papers about category-level accuracy (Bitchener 2008, Ellis 2010, Storch & Wigglesworth 2010)": {
+      "found_in_mcp_files": false,
+      "note": "Not found in any MCP file. However, Bitchener & Knoch (2010) WAS found — a closely related WCF accuracy study."
+    },
+    "Prober.ai (Bi, Wei & Zhou 2026)": {
+      "in_proposal": true,
+      "note": "Already in proposal as Bi, Wei & Zhou (2026)."
+    },
+    "Help Me Write a Story (Rashkin et al. 2025)": {
+      "in_proposal": true,
+      "note": "Already in proposal."
+    }
+  },
+  "papers_to_add": [
+    {
+      "title": "AI-Driven Intelligent Feedback System for Enhancing Self-Assessment Accuracy in Higher Education Writing",
+      "author_citation": "Chen & Chen (2025)",
+      "section": "§1.3 Accuracy and Quality of LLM-Generated Feedback",
+      "finding": "Compensatory effect: LLM feedback benefits low-accuracy students more than high-accuracy ones. Supports the Bai & Hu (2017) r=.816 concern that the students who most need help are least able to evaluate it."
+    },
+    {
+      "title": "Feedback sources in essay writing: peer-generated or AI-generated feedback?",
+      "author_citation": "Banihashem et al. (2024)",
+      "section": "§1.1 (three-way comparison justification) or §3.3 Study 1",
+      "finding": "Direct comparison of ChatGPT vs peer feedback quality for argumentative essays — ChatGPT provided more descriptive feedback. Supports the three-way feedback comparison design."
+    },
+    {
+      "title": "A comparative study of peer and teacher feedback in a Chinese EFL writing class",
+      "author_citation": "Yang, Badger & Yu (2006)",
+      "section": "§1.1 or §3.3 Study 1",
+      "finding": "Classic highly-cited (366) peer vs teacher feedback comparison in Chinese EFL context. Direct precedent for the three-way comparison in Study 1."
+    },
+    {
+      "title": "The effect of peer and teacher feedback on student writing",
+      "author_citation": "Paulus (1999)",
+      "section": "§1.1 or §3.3 Study 1",
+      "finding": "Foundational (251 citations) peer vs teacher feedback study in JSLW. Establishes the research lineage for the three-way comparison."
+    },
+    {
+      "title": "Mediating L2 writing revision: The impact of teacher-moderated ChatGPT feedback on L2 accuracy and lexical diversity",
+      "author_citation": "Pretorius & Thewissen (2026)",
+      "section": "§3.3 Study 1 (hybrid feedback condition)",
+      "finding": "Teacher-moderated ChatGPT feedback improves L2 accuracy and lexical diversity. Directly supports the hybrid feedback condition and the four-category teacher modification taxonomy."
+    },
+    {
+      "title": "Using teacher-supported peer feedback to develop student feedback literacy in L2 writing: An instructional model",
+      "author_citation": "Ma (2023)",
+      "section": "§1.5 Feedback Literacy",
+      "finding": "Teacher-supported peer feedback model for developing feedback literacy from a self-regulatory perspective. Links peer feedback to the feedback literacy framework already in proposal."
+    },
+    {
+      "title": "Effects of teacher-scaffolded and self-scaffolded corrective feedback compared to direct corrective feedback on grammatical accuracy in English L2 writing",
+      "author_citation": "Boggs (2019)",
+      "section": "§1.3 Accuracy and Quality",
+      "finding": "Comparison of scaffolded vs direct corrective feedback on L2 grammatical accuracy. Relevant to feedback mode dimension in Study 1 coding scheme."
+    },
+    {
+      "title": "Exposía: Teaching and Assessment of Academic Writing Skills for Research Project Proposals and Peer Feedback",
+      "author_citation": "Zyska et al. (2026)",
+      "section": "§1.4 or §3.3 Study 1",
+      "finding": "First public dataset connecting writing and peer/instructor feedback in higher education. Benchmarked LLMs on scoring — relevant to Study 2 classifier design."
+    },
+    {
+      "title": "Raising the linguistic accuracy level of advanced L2 writers with written corrective feedback",
+      "author_citation": "Bitchener & Knoch (2010)",
+      "section": "§1.3 Accuracy and Quality of LLM-Generated Feedback",
+      "finding": "Key AWE corrective feedback study (227 citations on JSLW). Relevant to the category-level accuracy lineage."
+    },
+    {
+      "title": "Navigating AI feedback in translation training: how text type, proficiency, and attitude shape students' acceptance behaviors",
+      "author_citation": "Chen & Lou (2026)",
+      "section": "§1.4 Student Response and Uptake",
+      "finding": "68.2% acceptance rate for AI feedback; rejection triggers deeper cognitive processing. Supports the six-category uptake taxonomy distinguishing passive non-engagement from active rejection with self-revision."
+    },
+    {
+      "title": "Beyond the monorail perspective: constructing a dual-role engagement framework in peer feedback for second language oral communication",
+      "author_citation": "He & Jin (2026)",
+      "section": "§1.4 or §1.5 Feedback Literacy",
+      "finding": "Dual-role engagement framework: learners as both feedback providers and recipients. Complements Lin & Yu (2025) already cited."
+    },
+    {
+      "title": "Peer feedback and Chinese medical students' English academic writing development: a longitudinal intervention study",
+      "author_citation": "Wu, Zhang & Li (2023)",
+      "section": "§1.4 Student Response and Uptake",
+      "finding": "Peer feedback effects retained at 6-week delayed post-test — supports the Study 3 delayed post-test design."
+    },
+    {
+      "title": "Continuation Wing 1.0 - A Deepseek-Assisted Feedback Platform for Continuation Writing Assessment",
+      "author_citation": "Li et al. (2025)",
+      "section": "§3.3 Study 1",
+      "finding": "DeepSeek platform for continuation writing with interpretable scoring. Demonstrates feasibility of multi-LLM feedback generation."
+    },
+    {
+      "title": "LLM feedback for academic writing: Effects on students' performance and engagement",
+      "author_citation": "Glüsing et al. (2025)",
+      "section": "§1.2 or §1.3",
+      "finding": "Examines LLM feedback effects on academic writing performance and engagement. Fleckenstein co-author connects to the meta-analysis already cited."
+    }
+  ]
+}

@@ -1,0 +1,521 @@
+{
+  "already_cited": [
+    "Fan et al. (2025) - Beware of metacognitive laziness",
+    "Crosthwaite & Sun (2025) - GenAI and L2 Written Feedback Studies: A Scoping Review",
+    "Yu & Xie (2025) - Generative AI vs. Teachers: Feedback Quality, Feedback Uptake, and Revision",
+    "Jacobsen et al. (2025) - AI, Expert or Peer? Impact of Perceived Feedback Source",
+    "Lo et al. (2025) - Evaluating Teacher, AI, and Hybrid Feedback in English Language Learning (Hong Kong)",
+    "Kaliisa et al. (2025) - How does AI compare to human feedback? A meta-analysis",
+    "Bauer et al. (2025) - Looking beyond the hype: Understanding the effects of AI on learning",
+    "Darvishi et al. (2023) - Impact of AI assistance on student agency",
+    "Hansen et al. (2025) - Effects of AI feedback coach on peer feedback quality"
+  ],
+  "new_papers_high_value": [
+    {
+      "title": "Breaking human dominance: Investigating learners' preferences for learning feedback from generative AI and human tutors",
+      "query": "MCP2-Q6 metacognitive laziness / MCP1-Q3 / MCP3-Q10",
+      "source": "MCP2 / MCP1 / MCP3",
+      "proposed_section": "§1.4",
+      "key_finding": "Students initially preferred human tutors, but free-dialogue ChatGPT interface increased AI preference; structured AI tools reinforced human tutor preference.",
+      "reason_valuable": "Directly supports algorithm aversion theory and preference-reality gap argument in the proposal; interface design matters for AI feedback acceptance."
+    },
+    {
+      "title": "How GenAI Affects Metacognition in Self-Regulated Learning: Between Enhancement and Inhibition",
+      "query": "MCP2-Q6 metacognitive laziness / MCP1-Q3 / MCP3-Q10",
+      "source": "MCP2 / MCP1 / MCP3",
+      "proposed_section": "§1.3",
+      "key_finding": "GenAI can enhance metacognitive capabilities (planning, monitoring, evaluation) but also risks metacognitive laziness through over-reliance on AI tools, reducing cognitive engagement.",
+      "reason_valuable": "Core theoretical framing for metacognition component of Study 4 training and the metacognitive laziness hypothesis in the proposal."
+    },
+    {
+      "title": "Hybrid intelligence: Human–AI coevolution and learning",
+      "query": "MCP1-Q3 metacognitive laziness / MCP3-Q10",
+      "source": "MCP1 / MCP3",
+      "proposed_section": "§1.3",
+      "key_finding": "Hybrid intelligence paradigm positions metacognition as central to effective human-AI interaction; overreliance on AI may decrease human decision-making if students do not exercise metacognitive monitoring.",
+      "reason_valuable": "Provides theoretical framework for hybrid feedback and situates metacognition as the key mechanism in human-AI writing feedback partnerships."
+    },
+    {
+      "title": "AI Tools in Society: Impacts on Cognitive Offloading and the Future of Critical Thinking",
+      "query": "MCP1-Q3 metacognitive laziness / MCP3-Q10",
+      "source": "MCP1 / MCP3",
+      "proposed_section": "§1.3",
+      "key_finding": "Significant negative correlation between frequent AI tool usage and critical thinking abilities, mediated by increased cognitive offloading.",
+      "reason_valuable": "Evidence for the cognitive offloading mechanism underlying metacognitive laziness; supports the theoretical gating in the proposal's training intervention logic."
+    },
+    {
+      "title": "Factors influencing critical thinking during AI use among university students: the mediating effects of epistemic laziness and metacognitive weakness",
+      "query": "MCP2-Q6 metacognitive laziness / MCP1-Q3",
+      "source": "MCP2 / MCP1",
+      "proposed_section": "§1.3",
+      "key_finding": "Epistemic laziness and metacognitive weakness mediate the relationship between AI use and critical thinking among university students.",
+      "reason_valuable": "Introduces epistemic laziness as a distinct mechanism from metacognitive weakness; supports multi-faceted training design in Study 4."
+    },
+    {
+      "title": "A Taxonomy of Errors in English as she is spoke: Toward an AI-Based Method of Error Analysis for EFL Writing Instruction",
+      "query": "MCP2-Q8 uptake taxonomy",
+      "source": "MCP2",
+      "proposed_section": "§3.3",
+      "key_finding": "Developed an LLM-based AI error analysis system using a linguistic taxonomy to identify, categorize, and correct EFL writing errors.",
+      "reason_valuable": "Direct methodological precedent for classification of feedback types and error categories in the proposal's Study 2 classifier."
+    },
+    {
+      "title": "eRevise+RF: A Writing Evaluation System for Assessing Student Essay Revisions and Providing Formative Feedback",
+      "query": "MCP2-Q8 uptake taxonomy",
+      "source": "MCP2",
+      "proposed_section": "§3.3",
+      "key_finding": "AWE system deployed with 406 students effectively assessed argumentative essay revisions and determined revision success in responding to feedback.",
+      "reason_valuable": "Exemplar of an operationalized uptake taxonomy system; directly informs design of feedback uptake coding in Study 3."
+    },
+    {
+      "title": "IELTS Writing Revision Platform with Automated Essay Scoring and Adaptive Feedback",
+      "query": "MCP2-Q8 uptake taxonomy",
+      "source": "MCP2",
+      "proposed_section": "§3.3",
+      "key_finding": "Transformer-based AES with adaptive feedback showed statistically significant score improvements (d=0.504), though effectiveness varied by revision strategy.",
+      "reason_valuable": "Provides effect size benchmark for revision quality improvement from AES in L2 writing; relevant to Study 1 accuracy mapping."
+    },
+    {
+      "title": "Mediating L2 writing revision: The impact of teacher-moderated ChatGPT feedback on L2 accuracy and lexical diversity",
+      "query": "MCP2-Q8 uptake taxonomy",
+      "source": "MCP2",
+      "proposed_section": "§1.2",
+      "key_finding": "Teacher-moderated ChatGPT feedback impacted L2 writing accuracy and lexical diversity during revision.",
+      "reason_valuable": "Direct empirical evidence for hybrid (teacher-moderated) ChatGPT feedback in L2 writing; supports Study 1's hybrid feedback condition."
+    },
+    {
+      "title": "Learner interaction with, and response to, AI-programmed automated writing evaluation feedback in EFL writing: An exploratory study",
+      "query": "MCP2-Q8 uptake taxonomy",
+      "source": "MCP2",
+      "proposed_section": "§3.3",
+      "key_finding": "EFL students' early interactions with AWE focused on error correction; uptake of feedback with linguistic resources was much lower than error corrective feedback.",
+      "reason_valuable": "Directly informs feedback uptake taxonomy design by showing differential uptake rates across feedback types."
+    },
+    {
+      "title": "Leveraging generative AI to foster metacognition and self-directed learning",
+      "query": "MCP2-Q6 metacognitive laziness",
+      "source": "MCP2",
+      "proposed_section": "§3.4",
+      "key_finding": "GenAI model used for metacognitive coaching significantly improved students' metacognitive awareness and self-directed learning readiness.",
+      "reason_valuable": "Direct empirical precedent for GenAI-facilitated metacognitive training; supports feasibility of Study 4's training design."
+    },
+    {
+      "title": "DeBiasMe: De-biasing Human-AI Interactions with Metacognitive AIED Interventions",
+      "query": "MCP2-Q6 metacognitive laziness",
+      "source": "MCP2",
+      "proposed_section": "§3.4",
+      "key_finding": "Advocates for metacognitive AI literacy interventions with deliberate friction to help students critically engage with AI and address cognitive biases.",
+      "reason_valuable": "Design framework for metacognitive AI literacy interventions with 'deliberate friction' — directly applicable to Study 4 training activities."
+    },
+    {
+      "title": "The effect of generative artificial intelligence literacy on academic achievement: the mediating role of academic self-efficacy and the moderating role of critical thinking",
+      "query": "MCP2-Q6 metacognitive laziness",
+      "source": "MCP2",
+      "proposed_section": "§1.4",
+      "key_finding": "GenAI literacy enhances academic achievement via academic self-efficacy, with critical thinking moderating this relationship.",
+      "reason_valuable": "Establishes GenAI literacy as a measurable construct with known mechanisms; supports the AI literacy component of the proposal."
+    },
+    {
+      "title": "Leveraging Hybrid Intelligence: How Teacher Agency Influences Behavioural Engagement in Human-AI Collaborative Writing Feedback Practices",
+      "query": "MCP2-Q10 hybrid feedback",
+      "source": "MCP2",
+      "proposed_section": "§3.5",
+      "key_finding": "Teacher agency significantly influences behavioural engagement in human-AI collaborative writing feedback practices.",
+      "reason_valuable": "Addresses teacher role in hybrid feedback — currently a gap in the proposal; supports the teacher-AI collaboration framing."
+    },
+    {
+      "title": "Teacher-AI Collaboration in Formative Writing Assessment: Hybrid Feedback Models with Grammarly in ELT",
+      "query": "MCP2-Q10 hybrid feedback",
+      "source": "MCP2",
+      "proposed_section": "§3.5",
+      "key_finding": "Explored hybrid feedback models combining teacher and Grammarly AI for formative writing assessment in ELT.",
+      "reason_valuable": "Case study of teacher-AI hybrid feedback in writing assessment; practical model for Study 1 hybrid feedback condition."
+    },
+    {
+      "title": "Comparing teacher E-feedback, AI feedback, and hybrid feedback in enhancing EFL writing skills",
+      "query": "MCP1-Q5 / MCP3-Q10",
+      "source": "MCP1 / MCP3",
+      "proposed_section": "§1.2",
+      "key_finding": "Hybrid (teacher+AI) feedback showed most substantial improvements in EFL writing — task achievement, coherence, and grammatical accuracy.",
+      "reason_valuable": "Empirical evidence for hybrid > AI-only > teacher-only in EFL writing; directly supports the hybrid condition rationale in Study 1."
+    },
+    {
+      "title": "Exploring the Reliability and Validity of AI Scoring in the Continuation Writing Task",
+      "query": "MCP3-Q10 hybrid",
+      "source": "MCP3",
+      "proposed_section": "§1.2",
+      "key_finding": "GPT-4 showed high self-consistency but more lenient scoring than human raters, prioritizing narrative coherence while teachers emphasized linguistic accuracy.",
+      "reason_valuable": "Directly relevant to AI-human scoring divergence (Study 1); supports need for hybrid feedback and LLM-as-rater analysis."
+    },
+    {
+      "title": "Investigating the quality and quantity of feedback enactment in academic writing: Comparing AWE with generative AI",
+      "query": "MCP3-Q10 hybrid",
+      "source": "MCP3",
+      "proposed_section": "§3.3",
+      "key_finding": "Students prioritized surface-level compliance with AWE while GenAI users showed different enactment patterns; feedback literacy improved over time with no significant between-group differences.",
+      "reason_valuable": "Directly compares AWE vs GenAI feedback enactment patterns; feedback literacy improvement measured — core to proposal's uptake and literacy focus."
+    },
+    {
+      "title": "Student perceptions of hybrid feedback: Using Gen-AI to enhance engagement with EAP writing feedback",
+      "query": "MCP3-Q10 hybrid",
+      "source": "MCP3",
+      "proposed_section": "§1.4",
+      "key_finding": "Integrating Gen-AI was perceived as effective by students with improvements in cognitive, behavioral, and affective engagement with EAP writing feedback.",
+      "reason_valuable": "Measures engagement dimensions of hybrid feedback in EAP — directly relevant to engagement analysis in Studies 3 and 4."
+    },
+    {
+      "title": "EXPLORING TEACHERS' DISPOSITIONS TOWARD AI FEEDBACK ACCURACY AND THE REFINEMENT PROCESS AND THEIR ENHANCEMENT PRACTICES IN EFL WRITING",
+      "query": "MCP3-Q10 hybrid",
+      "source": "MCP3",
+      "proposed_section": "§1.2",
+      "key_finding": "AI frequently overlooked meaning-level problems and focused on surface-level errors; teachers needed to act as feedback curators refining AI-generated feedback.",
+      "reason_valuable": "Empirical evidence for AI feedback accuracy limitations at meaning level — supports need for feedback quality classification in Study 2."
+    },
+    {
+      "title": "The Application of Artificial Intelligence Automated Evaluation Systems in English Writing Instruction: Scoring Accuracy, Feedback Effectiveness, and User Experience",
+      "query": "MCP3-Q10 hybrid",
+      "source": "MCP3",
+      "proposed_section": "§1.2",
+      "key_finding": "AI systems perform well on linguistic form evaluation (grammar, vocabulary) but remain inadequate in assessing content depth, logical structure, and creativity.",
+      "reason_valuable": "Reviews AWE strengths and limitations; supports the proposal's distinction between surface and meaning-level feedback accuracy."
+    },
+    {
+      "title": "Co-Writing with AI, on Human Terms: Aligning Research with User Demands Across the Writing Process",
+      "query": "MCP3-Q10 hybrid",
+      "source": "MCP3",
+      "proposed_section": "§3.5",
+      "key_finding": "Identified four design strategies for AI writing support (structured guidance, guided exploration, active co-writing, critical feedback) mapped across planning, translating, reviewing, and monitoring.",
+      "reason_valuable": "Design framework for AI writing tools mapped to cognitive writing processes; applicable to Streamlit tool design for Studies 3 and 4."
+    },
+    {
+      "title": "Metaheutagogy: A Framework for AI-Mediated Metacognitive Learning",
+      "query": "MCP3-Q10 metacognitive laziness",
+      "source": "MCP3",
+      "proposed_section": "§3.4",
+      "key_finding": "Proposes a framework positioning AI as a reflective dialogic partner emphasizing metacognitive regulation, judgement-centred capability, and ethical technology use.",
+      "reason_valuable": "Framework for positioning AI as metacognitive partner rather than answer-giver; directly applicable to Study 4 training design."
+    },
+    {
+      "title": "Metacognitive Engagement in AI-Supported Learning: Frameworks, Challenges, and Transformations",
+      "query": "MCP3-Q10 metacognitive laziness",
+      "source": "MCP3",
+      "proposed_section": "§1.3",
+      "key_finding": "Identifies how metacognitive knowledge types are activated in AI-supported learning and what kinds of feedback trigger self-regulation and reflective thinking.",
+      "reason_valuable": "Links feedback types to metacognitive activation; directly relevant to automated feedback classification (Study 2) and metacognitive outcomes (Study 4)."
+    },
+    {
+      "title": "Do Generative AI Tools Enhance Students' Learning Performance or Promote Laziness and Academic Cheating?",
+      "query": "MCP3-Q10 metacognitive laziness",
+      "source": "MCP3",
+      "proposed_section": "§1.3",
+      "key_finding": "Students using AI as supplemental tool performed significantly worse on unannounced quiz, indicating AI promotes laziness, dependency, and shortcut-taking behavior.",
+      "reason_valuable": "Empirical evidence for AI-induced learning dependency; strengthens the metacognitive laziness argument in the proposal."
+    },
+    {
+      "title": "Enhancing graduate students' evaluative skills through AI-supported collaborative marking",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": "§3.4",
+      "key_finding": "AI-supported collaborative marking improved inter-rater consistency (MAE from 3.260 to 1.221) and reduced deviations from expert ratings compared to student-only or AI-only conditions.",
+      "reason_valuable": "Directly relevant to evaluative judgement development in Study 4; AI-supported marking as metacognitive scaffold for calibration."
+    },
+    {
+      "title": "Comparing ChatGPT Feedback and Peer Feedback in Shaping Students' Evaluative Judgement of Statistical Analysis: A Case Study",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": "§1.4",
+      "key_finding": "ChatGPT provided timely detailed guidance but limited support for verifying accuracy; peer feedback promoted critical reflection but varied in quality; combining both may better support novice researchers.",
+      "reason_valuable": "Directly compares ChatGPT vs peer feedback for evaluative judgement — supports hybrid feedback design and links to evaluative judgement theory in the proposal."
+    },
+    {
+      "title": "Assessing AI-Driven Metacognitive Offloading: Initial Development and Validation of the Metacognitive Laziness Scale",
+      "query": "MCP2-Q6 metacognitive laziness",
+      "source": "MCP2",
+      "proposed_section": "§3.4",
+      "key_finding": "Developed and validated a Metacognitive Laziness Scale for measuring AI-driven cognitive offloading in education.",
+      "reason_valuable": "Provides measurement instrument for metacognitive offloading — potentially useful as a pre/post measure in Study 4 intervention."
+    },
+    {
+      "title": "The Illusion of Understanding: How Middle-Schoolers Fail to Regulate Inquiry with ChatGPT in a Science Task",
+      "query": "MCP1-Q3 metacognitive laziness",
+      "source": "MCP1",
+      "proposed_section": "§3.4",
+      "key_finding": "Students struggled to discriminate prompt types, failed to detect vague AI explanations, and terminated inquiry prematurely; positive AI attitudes were negatively associated with interaction quality.",
+      "reason_valuable": "Demonstrates metacognitive regulation failures with GenAI even among digital natives; supports need for explicit training on evaluating AI feedback quality."
+    },
+    {
+      "title": "Generative AI in English Language Education: Potential, Challenges, and the Path Forward",
+      "query": "MCP1-Q3 metacognitive laziness",
+      "source": "MCP1",
+      "proposed_section": "§1.1",
+      "key_finding": "GenAI offers personalized instruction and immediate feedback for English productive skills, but methodological limitations, assessment concerns, and ethical considerations require human-centered approaches.",
+      "reason_valuable": "Situates GenAI in English language education (TESOL) including writing feedback — directly relevant backdrop for the proposal's Scoping Review (Study 0)."
+    },
+    {
+      "title": "The Perception by University Students of the Use of ChatGPT in Education",
+      "query": "MCP1-Q3 metacognitive laziness",
+      "source": "MCP1",
+      "proposed_section": "§1.4",
+      "key_finding": "Students viewed ChatGPT favorably for saving time, personalized tutoring, feedback, and writing ideation; main barriers were inability to assess source quality and accuracy.",
+      "reason_valuable": "Student perception data on ChatGPT for writing: identifies inability to assess accuracy as key barrier — supports the evaluative judgement training rationale."
+    },
+    {
+      "title": "AI-generated feedback in an EAP writing classroom: The collaborative process of feedback, uptake, and revision quality",
+      "query": "MCP2-Q3 AI feedback",
+      "source": "MCP2",
+      "proposed_section": "§1.2",
+      "key_finding": "Investigates AI-generated feedback in EAP writing, focusing on the collaborative process of feedback delivery, student uptake, and revision quality.",
+      "reason_valuable": "JEAP publication directly examining AI feedback in EAP — exactly the proposal's context; collaborative feedback process aligns with Study 1 design."
+    },
+    {
+      "title": "Generative AI-assisted feedback and EFL writing: a study on proficiency, revision frequency and writing quality",
+      "query": "MCP2-Q3 AI feedback",
+      "source": "MCP2",
+      "proposed_section": "§1.2",
+      "key_finding": "Investigated GenAI-assisted feedback for EFL writing; examined proficiency, revision frequency, and writing quality outcomes.",
+      "reason_valuable": "Directly relevant to feedback quality and revision analysis in L2 writing; supports Study 1's feedback accuracy mapping approach."
+    },
+    {
+      "title": "Navigating AI feedback in translation training: how text type, proficiency, and attitude shape students' acceptance behaviors",
+      "query": "MCP2-Q3 AI feedback",
+      "source": "MCP2",
+      "proposed_section": "§3.3",
+      "key_finding": "Students accepted 68.2% of LLM suggestions; acceptance shaped by text type, proficiency, and AI attitude; rejection often triggered deeper engagement (self-revision, external verification).",
+      "reason_valuable": "Provides acceptance rate baseline and shows rejection triggers deeper cognitive processing — directly relevant to uptake taxonomy and engagement analysis."
+    },
+    {
+      "title": "Beyond the monorail perspective: constructing a dual-role engagement framework in peer feedback for second language oral communication",
+      "query": "MCP2-Q3 AI feedback",
+      "source": "MCP2",
+      "proposed_section": "§1.4",
+      "key_finding": "Proposes a dual-role engagement framework examining learners' engagement as both feedback providers and recipients in peer feedback contexts.",
+      "reason_valuable": "Framework for dual-role engagement in feedback — applicable to understanding how L2 writers engage as both feedback evaluators and recipients."
+    },
+    {
+      "title": "A Systematic Comparative Review of Generative AI vs. Teacher Feedback in EFL Writing: Learner Perceptions, Preferences, and Psychological Factors",
+      "query": "MCP3-Q10 hybrid",
+      "source": "MCP3",
+      "proposed_section": "§1.1",
+      "key_finding": "GenAI reduces anxiety and improves surface-level errors; teacher feedback fosters higher-order argumentation and metacognitive awareness; hybrid models are superior.",
+      "reason_valuable": "Systematic review directly comparing GenAI vs teacher feedback in EFL writing — strong candidate for inclusion in Scoping Review (Study 0)."
+    },
+    {
+      "title": "Deep Learning Methods to Automate Students' Writing Evaluation for Improved Writing Outcomes",
+      "query": "MCP2-Q4 DeBERTa/classification",
+      "source": "MCP2",
+      "proposed_section": "§3.3",
+      "key_finding": "DeBERTa-v3-large consistently outperformed other models across six analytical writing measures (cohesion, syntax, vocabulary, phraseology, grammar, conventions) for AES.",
+      "reason_valuable": "Directly validates DeBERTa-v3-large for automated writing evaluation — supports Study 2's choice of DeBERTa-v3 as classifier backbone."
+    },
+    {
+      "title": "Explainable Automatic Grading with Neural Additive Models",
+      "query": "MCP2-Q4 DeBERTa/classification",
+      "source": "MCP2",
+      "proposed_section": "§3.3",
+      "key_finding": "Neural Additive Model combined performance of neural networks with explainability of additive models for ASAG, using Knowledge Integration features.",
+      "reason_valuable": "Relevant to explainability requirements in the proposal's classifier design; alternative approach for interpretable automatic grading."
+    },
+    {
+      "title": "Mind the Gap: Automated Corpus Creation for Enthymeme Detection and Reconstruction in Learner Arguments",
+      "query": "MCP2-Q4 DeBERTa/classification",
+      "source": "MCP2",
+      "proposed_section": "§3.3",
+      "key_finding": "Created 40,089 argument instances for enthymeme detection and reconstruction using ICLEv3 corpus of learner essays; automated gap detection in argumentation.",
+      "reason_valuable": "Uses ICLEv3 (same corpus the proposal plans to use) for automated learner argument analysis — directly methodological precedent for Study 2."
+    },
+    {
+      "title": "A hybrid deep learning and fuzzy logic framework for feature-based evaluation of English Language Learners",
+      "query": "MCP2-Q4 DeBERTa/classification",
+      "source": "MCP2",
+      "proposed_section": "§3.3",
+      "key_finding": "Hybrid DeBERTa+Metadata+LSTM model achieved 93% accuracy for language proficiency prediction; syntax, cohesion, and vocabulary centrality confirmed by SHAP analysis.",
+      "reason_valuable": "Technical precedent for DeBERTa-based classification with explainability (SHAP) for ELL evaluation — directly informs Study 2 classifier architecture."
+    },
+    {
+      "title": "An Experiential Approach to AI Literacy",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": "§3.4",
+      "key_finding": "Proposes experiential AI literacy that integrates participants' daily experiences through storytelling and brainstorming grounded AI use cases, bridging knowing-doing gap.",
+      "reason_valuable": "Pedagogical approach for AI literacy training — experiential (not text-only) aligns with the proposal's practice-based training design for Study 4."
+    },
+    {
+      "title": "Supporting Feedback and Trust in CBME: A Conjoint WBA Workshop for Trainers and Trainees",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": "§1.1",
+      "key_finding": "Conjoint WBA workshop enhanced feedback literacy behaviours ('Provide Feedback', 'Manage Affect') in medical education setting.",
+      "reason_valuable": "Feedback literacy intervention study showing measurable improvement in feedback literacy behaviours; relevant to feedback literacy component even if medical context."
+    },
+    {
+      "title": "Unlocking potential in underachieving learners: self-regulation development through AI-supported e-mentoring among socioeconomically disadvantaged students",
+      "query": "MCP2-Q6 metacognitive laziness",
+      "source": "MCP2",
+      "proposed_section": "§3.4",
+      "key_finding": "AI-supported e-mentoring (goal clarification, micro-strategy prompting, reflective coaching) improved SRL, learning engagement, and persistence in cluster RCT.",
+      "reason_valuable": "Empirical RCT evidence for AI-supported SRL training with compensatory benefits for low-baseline students — strong precedent for Study 4 training effects."
+    },
+    {
+      "title": "Students' perspectives of the change from human led- to AI-led feedback – a review of Studiosity's Writing Feedback",
+      "query": "MCP2-Q10 hybrid",
+      "source": "MCP2",
+      "proposed_section": "§1.4",
+      "key_finding": "Students value AI feedback for speed and consistency but prefer humans for nuanced understanding; hybrid approaches recommended.",
+      "reason_valuable": "Student voice on AI vs human feedback in writing; supports hybrid feedback preference and the preference-reality gap argument."
+    },
+    {
+      "title": "Automated Evaluation of ESL Learners' English Writing Skills through AI Writing Analytics",
+      "query": "MCP3-Q10 hybrid",
+      "source": "MCP3",
+      "proposed_section": "§1.2",
+      "key_finding": "Reviews AWE systems including DL, NLP, and GenAI approaches for real-time feedback, linguistic feature extraction, and integration with teacher practices.",
+      "reason_valuable": "Comprehensive review of AWE approaches for ESL writing — relevant to the Scoping Review and situating the proposal's technical approach."
+    },
+    {
+      "title": "A Systematic Comparative Review of GenAI vs Teacher Feedback in EFL Writing",
+      "query": "MCP3-Q10 hybrid",
+      "source": "MCP3",
+      "proposed_section": "§1.1",
+      "key_finding": "GenAI reduces anxiety and improves surface-level errors; teacher feedback fosters higher-order argumentation; hybrid models are superior.",
+      "reason_valuable": "Systematic review directly comparing GenAI vs teacher feedback in EFL writing — ideal for inclusion in Study 0 scoping review."
+    },
+    {
+      "title": "Systematic review of research on artificial intelligence applications in higher education – where are the educators?",
+      "query": "MCP1-Q5 AI feedback / MCP3-Q10",
+      "source": "MCP1 / MCP3",
+      "proposed_section": "§1.1",
+      "key_finding": "AIEd applications cluster into profiling/prediction, assessment/evaluation, adaptive systems, and intelligent tutoring; weak connection to pedagogical theory.",
+      "reason_valuable": "Foundational AIEd systematic review; identifies the gap in pedagogical grounding that the proposal addresses."
+    },
+    {
+      "title": "Supporting STEM students' self-regulatory skills through developing their assessment literacy and evaluative judgement capabilities",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": "§1.4",
+      "key_finding": "Addresses how assessment literacy and evaluative judgement development support self-regulatory skills in STEM students.",
+      "reason_valuable": "Links assessment literacy to evaluative judgement — relevant theoretical framing for feedback literacy in the proposal."
+    },
+    {
+      "title": "Online peer assessment in Galenic Pharmacy: enhancing evaluative judgement in higher education",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": "§1.4",
+      "key_finding": "Online peer assessment with iterative deliverables improved feedback quality across iterations and enhanced critical judgement.",
+      "reason_valuable": "Evidence for peer assessment improving evaluative judgement through iterative practice; supports the practice-based approach in Study 4."
+    }
+  ],
+  "new_papers_low_value": [
+    {
+      "title": "Computer and Internet Literacy Course of the College of Computer Science for Municipality of Agoo, La Union",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": null,
+      "key_finding": "Basic ICT literacy training for barangay officials in the Philippines.",
+      "reason_valuable": "Too narrow/basic; not relevant to GenAI feedback or L2 writing."
+    },
+    {
+      "title": "Assessing Data Literacy in K-12 Education: Challenges and Opportunities",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": null,
+      "key_finding": "Data literacy assessment challenges in K-12 education.",
+      "reason_valuable": "Data literacy, not feedback literacy or AI; K-12 context, not L2 writing."
+    },
+    {
+      "title": "Building evaluative judgement through the process of feedback",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": "references",
+      "key_finding": "Evaluative judgement can be built through feedback processes.",
+      "reason_valuable": "Theoretical overlap with already-cited Tai et al. (2018); book chapter from the same Routledge volume. Low marginal value."
+    },
+    {
+      "title": "Operationalising Dialogic Feedback to Develop Students' Evaluative Judgement and Enactment of Feedback",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": "references",
+      "key_finding": "Dialogic feedback operationalization for evaluative judgement development.",
+      "reason_valuable": "Theoretical overlap with Carless & Boud already cited; book chapter, limited added value."
+    },
+    {
+      "title": "Exemplars, feedback and bias",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": null,
+      "key_finding": "Exemplars can introduce bias in feedback processes.",
+      "reason_valuable": "Peripheral; book chapter on exemplar bias, not directly relevant to AI feedback."
+    },
+    {
+      "title": "Limits to evaluative judgement",
+      "query": "MCP2-Q5 feedback literacy",
+      "source": "MCP2",
+      "proposed_section": null,
+      "key_finding": "Identifies limits and boundary conditions of evaluative judgement.",
+      "reason_valuable": "Theoretical but marginal; book chapter from the same Routledge volume as already-cited sources."
+    },
+    {
+      "title": "SWOT analysis of ChatGPT: Implications for educational practice and research",
+      "query": "MCP1-Q3 metacognitive laziness",
+      "source": "MCP1",
+      "proposed_section": "references",
+      "key_finding": "ChatGPT strengths include personalized responses; weaknesses include lack of deep understanding; threats include declining cognitive skills.",
+      "reason_valuable": "Useful overview but well-cited and framework-level; may already be reflected via other citations. Consider if space permits."
+    },
+    {
+      "title": "ChatGPT for good? On opportunities and challenges of large language models for education",
+      "query": "MCP1-Q3 metacognitive laziness",
+      "source": "MCP1",
+      "proposed_section": "references",
+      "key_finding": "LLMs offer opportunities for personalized learning but require careful integration to address bias, reliability, and critical thinking.",
+      "reason_valuable": "Broad overview; useful as background but not specific enough to merit dedicated citation in a methods-heavy proposal."
+    },
+    {
+      "title": "The Robots Are Here: Navigating the Generative AI Revolution in Computing Education",
+      "query": "MCP1-Q3 metacognitive laziness",
+      "source": "MCP1",
+      "proposed_section": null,
+      "key_finding": "Multi-country survey of LLM use in computing education: attitudes, pedagogical changes, ethical issues.",
+      "reason_valuable": "Computing education context; not L2 writing. Low direct relevance."
+    },
+    {
+      "title": "Unveiling Students' Experiences and Perceptions of AI Usage in Higher Education",
+      "query": "MCP1-Q3 metacognitive laziness",
+      "source": "MCP1",
+      "proposed_section": null,
+      "key_finding": "Students report benefits of increased productivity and personalized learning alongside concerns about over-reliance.",
+      "reason_valuable": "Generic AI perceptions; no writing-specific focus. Low marginal value over already-cited student perception studies."
+    },
+    {
+      "title": "Recommended \"AI, Expert or Peer?\" paper is already cited (Jacobsen et al. 2025 line 411)",
+      "query": "MCP2-Q3",
+      "source": "MCP2",
+      "proposed_section": null,
+      "key_finding": "Already cited in proposal.",
+      "reason_valuable": "Duplicate."
+    },
+    {
+      "title": "Feedback and Automated Writing Evaluation (AWE) - Na & Duris & Hegelheimer",
+      "query": "MCP2-Q9 spaced learning",
+      "source": "MCP2",
+      "proposed_section": "references",
+      "key_finding": "ChatGPT valued for global writing aspects (content, organization) but less effective for sentence-level issues; feedback often overly general and positive.",
+      "reason_valuable": "Useful finding about ChatGPT feedback characteristics but book chapter format limits citable authority. Low-medium value."
+    },
+    {
+      "title": "Optimizing DeBERTa V3 for Accurate Automated Essay Evaluation in Indonesian Educational Context",
+      "query": "MCP2-Q4 DeBERTa",
+      "source": "MCP2",
+      "proposed_section": null,
+      "key_finding": "DeBERTa V3 for AEE in Indonesian context.",
+      "reason_valuable": "Conference proceedings; no abstract available. Limited citable authority compared to journal publications."
+    },
+    {
+      "title": "Leveraging Hybrid Intelligence: Teacher Agency in Human-AI Collaborative Writing Feedback (listed twice)",
+      "query": "MCP2-Q10",
+      "source": "MCP2",
+      "proposed_section": null,
+      "key_finding": "Duplicate - already in high-value list.",
+      "reason_valuable": "Duplicate."
+    }
+  ]
+}

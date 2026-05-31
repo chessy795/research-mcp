@@ -1,6 +1,6 @@
 # research-mcp
 
-A bundled MCP server that unifies 8 academic sources into 8 curated tools for LLM research agents. Benchmarked across 30 runs (10 queries × 3 MCPs) against standalone `academix` and `paper-search-mcp`.
+A bundled MCP server that unifies 9 academic sources into 8 curated tools for LLM research agents. Benchmarked across 30 runs (10 queries × 3 MCPs) against standalone `academix` and `paper-search-mcp`.
 
 ## Benchmark (30 Runs, 10 Queries)
 
