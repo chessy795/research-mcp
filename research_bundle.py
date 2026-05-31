@@ -233,7 +233,18 @@ def _normalize_paper(paper: dict[str, Any], source: str) -> dict[str, Any]:
     }
 
 
-def _merge_papers(items: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
+def _merge_papers(items: list[dict[str, Any]], limit: int, query: str | None = None) -> list[dict[str, Any]]:
+    """Deduplicate and rank papers. Adds relevance_score when query is provided.
+
+    relevance_score = term overlap between query and title (0-10 scale).
+    """
+    import re as _re
+    # Extract query terms for relevance scoring
+    query_terms = set()
+    if query:
+        q_clean = _re.sub(r"[^\w\s]", "", query.lower())
+        query_terms = {w for w in q_clean.split() if len(w) > 2}
+
     merged: dict[str, dict[str, Any]] = {}
     for item in items:
         key = _paper_key(item)
@@ -242,6 +253,14 @@ def _merge_papers(items: list[dict[str, Any]], limit: int) -> list[dict[str, Any
         existing = merged.get(key)
         if existing is None:
             item["source_hits"] = len(set(item.get("sources") or []))
+            # Compute relevance score from title term overlap
+            if query_terms and item.get("title"):
+                title_clean = _re.sub(r"[^\w\s]", "", item["title"].lower())
+                title_terms = set(title_clean.split())
+                overlap = len(title_terms & query_terms)
+                item["relevance_score"] = min(overlap * 3, 10)  # Each matching term = +3, max 10
+            else:
+                item["relevance_score"] = 0
             merged[key] = item
             continue
         new_sources = set(existing.get("sources") or []) | set(item.get("sources") or [])
@@ -253,14 +272,18 @@ def _merge_papers(items: list[dict[str, Any]], limit: int) -> list[dict[str, Any
         existing["citation_count"] = max(
             _to_int(existing.get("citation_count")), _to_int(item.get("citation_count"))
         )
-    # Rank by: source_hits (most important), has_abstract, year recency, then citation as tiebreaker
+        # Update relevance score if this version has better title match
+        if "relevance_score" not in existing or item.get("relevance_score", 0) > existing.get("relevance_score", 0):
+            existing["relevance_score"] = item.get("relevance_score", 0)
+    # Rank by: source_hits, relevance_score, has_abstract, year recency, then citation as tiebreaker
     ranked = sorted(
         merged.values(),
         key=lambda p: (
             _to_int(p.get("source_hits")),
+            _to_int(p.get("relevance_score")),
             1 if p.get("abstract") else 0,
             _to_int(p.get("year")),
-            min(_to_int(p.get("citation_count")), 5000),  # cap citations to prevent dominance
+            min(_to_int(p.get("citation_count")), 5000),
         ),
         reverse=True,
     )
@@ -436,7 +459,7 @@ async def search_literature(
             for paper in (out or []) if isinstance(out, list) else []:
                 papers.append(_normalize_paper(paper, "springer"))
 
-    merged = _merge_papers(papers, max_results)
+    merged = _merge_papers(papers, max_results, query)
 
     result = {
         "query": query,
@@ -537,7 +560,7 @@ async def search_literature(
             for cp in citation_papers:
                 cp["citation_walk"] = True
             all_papers = merged + citation_papers
-            result["papers"] = _merge_papers(all_papers, max_results + 10)
+            result["papers"] = _merge_papers(all_papers, max_results + 10, query)
             result["citation_walk_found"] = len(citation_papers)
 
     if check_scihub:
@@ -804,7 +827,7 @@ async def paper_lookup(
         except Exception:
             pass
 
-    merged = _merge_papers(results, max_results)
+    merged = _merge_papers(results, max_results, query)
     return {"query": query, "results_found": len(merged), "errors": errors, "papers": merged}
 
 
