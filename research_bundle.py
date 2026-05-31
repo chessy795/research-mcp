@@ -318,6 +318,10 @@ def _merge_papers(items: list[dict[str, Any]], limit: int, query: str | None = N
         ),
         reverse=True,
     )
+    # Filter out papers with relevance_score < 3 (no query term match + no citation boost)
+    # Score 0 = zero query terms in title AND <50 citations
+    # Score 1-2 = only from citation boost with no title match (rare)
+    ranked = [p for p in ranked if _to_int(p.get("relevance_score")) >= 3]
     return ranked[:limit]
 
 
