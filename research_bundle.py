@@ -177,14 +177,14 @@ def _paper_key(paper: dict[str, Any]) -> str:
     pmid = str(paper.get("pmid") or paper.get("paper_id") or "").strip()
     if pmid.startswith("PMID:"):
         return pmid.lower()
-    # Title-based dedup: normalize aggressively
+    # Title-based dedup: only merge if titles are very similar (not just containing same words)
     title = str(paper.get("title") or "").lower()
-    # Strip punctuation, collapse whitespace
     import re as _re
     title = _re.sub(r"[^\w\s]", "", title)
     title = " ".join(title.split())
     year = str(paper.get("year") or paper.get("published_date") or "")[:4]
-    return f"title:{title[:200]}:{year}"
+    # Use first 80 chars of normalized title to avoid merging different papers with shared prefixes
+    return f"title:{title[:80]}:{year}"
 
 
 def _to_int(value: Any, default: int = 0) -> int:
@@ -389,7 +389,7 @@ async def search_literature(
             ),
             paper_search.search_papers(
                 query=q,
-                max_results_per_source=max(3, min(max_results, 30)),
+                max_results_per_source=max(5, min(max_results * 2, 50)),
                 sources=BEST_SOURCES,
                 year=year,
             ),
