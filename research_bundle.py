@@ -329,7 +329,7 @@ def _detect_source_from_paper(paper: dict[str, Any]) -> str:
 @mcp.tool()
 async def search_literature(
     query: str,
-    max_results: int = 20,
+    max_results: int = 15,
     year_from: int | None = None,
     year_to: int | None = None,
     expand_queries: bool = True,
@@ -338,22 +338,24 @@ async def search_literature(
     cite_walk_max_papers: int = 3,
     check_scihub: bool = False,
 ) -> dict[str, Any]:
-    """Search up to 8 academic sources, deduplicate, rank, and optionally walk citations.
+    """Search up to 8 academic sources, deduplicate, and optionally walk citations.
 
     Base sources (always active): arXiv, Semantic Scholar, OpenAlex, CrossRef, PubMed, Unpaywall.
     Conditional sources (when API keys set): Scopus (ELSEVIER_API_KEY), Springer (SPRINGER_API_KEY).
 
     Returns paper metadata (title, authors, year, abstract, DOI, citation count, is_open_access).
+    Includes BOTH seminal older papers AND recent papers. Do NOT filter by year unless the
+    user specifically requests it — seminal papers from 1990-2017 are often more important
+    than recent ones.
+
     Use extract_sections to read specific sections from papers (saves ~80% tokens vs full text).
     Use read_paper only when you need the complete document.
 
-    For niche sources (DBLP, bioRxiv, IEEE, etc.) use search_specific_sources.
-
     Args:
         query: Search query string
-        max_results: Maximum results to return (default 20)
-        year_from: Filter papers from this year
-        year_to: Filter papers until this year
+        max_results: Maximum results to return (default 15)
+        year_from: Filter papers from this year — ONLY set if user explicitly asks for recency
+        year_to: Filter papers until this year — ONLY set if user explicitly asks for recency
         expand_queries: Auto-expand acronyms (LLM->large language model)
         auto_cite_walk: Auto-walk citation graph for top results
         cite_walk_depth: Citation graph walk depth (1=direct citations only)
@@ -450,7 +452,8 @@ async def search_literature(
             if pid:
                 walk_ids.append(pid)
 
-        async def _fetch_citations(pid: str) -> list[dict[str, Any]]:
+        async def _fetch_citations_s2(pid: str) -> list[dict[str, Any]]:
+            """Fetch citing papers from Semantic Scholar."""
             try:
                 citations_data = _json_load(
                     await academix_server.academic_get_citations(
@@ -458,13 +461,68 @@ async def search_literature(
                     )
                 )
                 citing = citations_data.get("citing_papers", []) if isinstance(citations_data, dict) else []
-                return [_normalize_paper(cp, "citation-walk") for cp in citing[:5]]
+                return [_normalize_paper(cp, "citation-walk-s2") for cp in citing[:5]]
             except Exception:
                 return []
 
+        async def _fetch_citations_oa(pid: str) -> list[dict[str, Any]]:
+            """Fetch citing papers from OpenAlex (free, no rate limits)."""
+            try:
+                from publisher_apis import _get_client
+                client = await _get_client()
+                oa_email = os.environ.get("UNPAYWALL_EMAIL", "research@example.com")
+                doi = pid if pid.startswith("10.") else ""
+                if not doi:
+                    return []
+                resp = await client.get(
+                    f"https://api.openalex.org/works",
+                    params={
+                        "filter": f"cites:{doi}",
+                        "per_page": 5,
+                        "mailto": oa_email,
+                    },
+                )
+                if resp.status_code != 200:
+                    return []
+                data = resp.json()
+                results = data.get("results", [])
+                papers = []
+                for r in results[:5]:
+                    authors = []
+                    for a in (r.get("authorships") or [])[:5]:
+                        name = (a.get("author") or {}).get("display_name", "")
+                        if name:
+                            authors.append(name)
+                    abstract_inv = r.get("abstract_inverted_index")
+                    abstract = ""
+                    if abstract_inv:
+                        positions = []
+                        for word, pos_list in abstract_inv.items():
+                            for pos in pos_list:
+                                positions.append((pos, word))
+                        positions.sort()
+                        abstract = " ".join(w for _, w in positions)
+                    papers.append({
+                        "title": r.get("title", ""),
+                        "authors": authors,
+                        "year": (r.get("publication_date") or "")[:4] or None,
+                        "doi": r.get("doi", ""),
+                        "abstract": abstract,
+                        "citation_count": _to_int((r.get("cited_by_count") or 0)),
+                        "url": r.get("id", ""),
+                    })
+                return [_normalize_paper(p, "citation-walk-oa") for p in papers]
+            except Exception:
+                return []
+
+        # Fetch from both Semantic Scholar and OpenAlex in parallel
+        citation_tasks = []
+        for pid in walk_ids:
+            citation_tasks.append(_fetch_citations_s2(pid))
+            citation_tasks.append(_fetch_citations_oa(pid))
+
         citation_results = await asyncio.gather(
-            *[_fetch_citations(pid) for pid in walk_ids],
-            return_exceptions=True,
+            *citation_tasks, return_exceptions=True,
         )
         citation_papers: list[dict[str, Any]] = []
         for r in citation_results:
