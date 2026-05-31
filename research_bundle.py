@@ -397,7 +397,6 @@ async def search_literature(
     Base sources (always active): arXiv, Semantic Scholar, OpenAlex, CrossRef,
     PubMed, Unpaywall, OpenAIRE.
     Conditional sources (when API keys set): Scopus (ELSEVIER_API_KEY), Springer (SPRINGER_API_KEY).
-    Conditional sources (when API keys set): Scopus (ELSEVIER_API_KEY), Springer (SPRINGER_API_KEY).
     Excludes noisy sources (bioRxiv, medRxiv) by default.
 
     Returns paper metadata (title, authors, year, abstract, DOI, citation count, is_open_access).
