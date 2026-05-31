@@ -321,7 +321,7 @@ def _merge_papers(items: list[dict[str, Any]], limit: int, query: str | None = N
     return ranked[:limit]
 
 
-BEST_SOURCES = "arxiv,semantic,crossref,pubmed,unpaywall,openaire,europepmc"
+BEST_SOURCES = "arxiv,semantic,crossref,pubmed,unpaywall,openaire"
 
 
 def _expand_query(query: str) -> list[str]:
@@ -396,7 +396,8 @@ async def search_literature(
     """Search across 8 academic sources, deduplicate, and walk citations.
 
     Base sources (always active): arXiv, Semantic Scholar, OpenAlex, CrossRef,
-    PubMed, Unpaywall, OpenAIRE, Europe PMC.
+    PubMed, Unpaywall, OpenAIRE.
+    Conditional sources (when API keys set): Scopus (ELSEVIER_API_KEY), Springer (SPRINGER_API_KEY).
     Conditional sources (when API keys set): Scopus (ELSEVIER_API_KEY), Springer (SPRINGER_API_KEY).
     Excludes noisy sources (bioRxiv, medRxiv) by default.
 
