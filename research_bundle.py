@@ -233,10 +233,23 @@ def _normalize_paper(paper: dict[str, Any], source: str) -> dict[str, Any]:
     }
 
 
+SOURCE_PRECISION_BONUS = {
+    "openaire": 2,
+    "academix": 1,
+    "arxiv": 1,
+    "semantic": 1,
+    "europepmc": 0,
+    "pubmed": 0,
+    "crossref": 0,
+    "unpaywall": 0,
+}
+
+
 def _merge_papers(items: list[dict[str, Any]], limit: int, query: str | None = None) -> list[dict[str, Any]]:
     """Deduplicate and rank papers. Adds relevance_score when query is provided.
 
-    relevance_score = term overlap between query and title (0-10 scale).
+    relevance_score = term overlap between query and title (0-10 scale)
+    + citation boost (1-3 points for 50+/100+/500+ citations).
     """
     import re as _re
     # Extract query terms for relevance scoring
@@ -252,7 +265,11 @@ def _merge_papers(items: list[dict[str, Any]], limit: int, query: str | None = N
             continue
         existing = merged.get(key)
         if existing is None:
-            item["source_hits"] = len(set(item.get("sources") or []))
+            raw_hits = len(set(item.get("sources") or []))
+            precision_boost = 0
+            for s in (item.get("sources") or []):
+                precision_boost = max(precision_boost, SOURCE_PRECISION_BONUS.get(s, 0))
+            item["source_hits"] = raw_hits + precision_boost
             # Compute relevance score from title term overlap + citation boost
             score = 0
             if query_terms and item.get("title"):
@@ -273,7 +290,11 @@ def _merge_papers(items: list[dict[str, Any]], limit: int, query: str | None = N
             continue
         new_sources = set(existing.get("sources") or []) | set(item.get("sources") or [])
         existing["sources"] = sorted(new_sources)
-        existing["source_hits"] = len(new_sources)
+        raw_hits = len(new_sources)
+        precision_boost = 0
+        for s in new_sources:
+            precision_boost = max(precision_boost, SOURCE_PRECISION_BONUS.get(s, 0))
+        existing["source_hits"] = raw_hits + precision_boost
         for field in ("abstract", "doi", "arxiv_id", "pmid", "paper_id", "url", "pdf_url", "venue", "year", "keywords"):
             if not existing.get(field) and item.get(field):
                 existing[field] = item[field]
