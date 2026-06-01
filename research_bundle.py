@@ -26,7 +26,6 @@ from fastmcp import FastMCP  # noqa: E402
 from academix.aggregator import AcademicAggregator  # noqa: E402
 from academix import server as academix_server  # noqa: E402
 from paper_search_mcp import server as paper_search  # noqa: E402
-from mcp_server import server as paper_distill  # noqa: E402
 
 _academix: AcademicAggregator | None = None
 
@@ -386,31 +385,7 @@ async def search_literature(
     cite_walk_max_papers: int = 5,
     check_scihub: bool = False,
 ) -> dict[str, Any]:
-    """Search across 8 academic sources, deduplicate, and walk citations.
-
-    Base sources (always active): arXiv, Semantic Scholar, OpenAlex, CrossRef,
-    Unpaywall, OpenAIRE.
-    Conditional sources (when API keys set): Scopus (ELSEVIER_API_KEY), Springer (SPRINGER_API_KEY).
-    Excludes noisy sources (bioRxiv, medRxiv) by default.
-
-    Returns paper metadata (title, authors, year, abstract, DOI, citation count, is_open_access).
-    Ranks results by: multi-source agreement, relevance score (title overlap + citation boost),
-    abstract availability, citation count, then year. This biases toward seminal/high-impact
-    papers over recent low-citation preprints. Do NOT filter by year unless the user specifically
-    requests it — seminal papers from 1990-2017 are often more important than recent ones.
-
-    Automatically walks BOTH forward citations (who cited these papers)
-    AND backward references (what these papers cited) to surface foundational works.
-    Use extract_sections to read specific sections from papers (saves ~80% tokens vs full text).
-
-    Args:
-        query: Search query string
-        max_results: Maximum results to return (default 15)
-        year_from: Filter papers from this year — ONLY set if user explicitly asks for recency
-        year_to: Filter papers until this year — ONLY set if user explicitly asks for recency
-        expand_queries: Auto-expand acronyms (LLM->large language model)
-        check_scihub: Add Sci-Hub availability field to each paper (slower, ~8s per batch)
-    """
+    """Search academic papers across 8 sources (arXiv, Semantic Scholar, OpenAlex, CrossRef, Unpaywall, OpenAIRE, Scopus, Springer). Returns deduplicated results with abstracts, citation counts, and auto-walks citation graphs."""
     # Check cache
     cache_key = (query, max_results, year_from, year_to, expand_queries, auto_cite_walk)
     cached = _search_cache.get(*cache_key)
@@ -684,12 +659,7 @@ async def walk_citations(
     depth: int = 1,
     max_papers_per_hop: int = 5,
 ) -> dict[str, Any]:
-    """Multi-hop citation chain walker. Follows citation graphs to find related work.
-
-    forward = papers that cite this one (who built on it).
-    backward = papers this one cites (what it built on).
-    depth = how many hops to follow (1 = direct, 2 = citing papers of citing papers).
-    """
+    """Follow citation graphs forward (who cites) or backward (what it cites), multi-hop."""
     visited: set[str] = set()
     all_papers: list[dict[str, Any]] = []
     queue: deque[tuple[str, int]] = deque([(paper_id, 0)])
@@ -790,17 +760,7 @@ async def export_references(
     papers: list[dict[str, Any]],
     format: Literal["ris", "csv", "json", "bibtex"] = "ris",
 ) -> str:
-    """Export paper references in RIS, CSV, JSON, or BibTeX format.
-
-    RIS works with EndNote, Zotero, Mendeley.
-    CSV works with spreadsheets and literature matrices.
-    JSON preserves all metadata fields.
-    BibTeX for LaTeX documents.
-
-    Args:
-        papers: List of paper dicts (from search_literature results)
-        format: Output format
-    """
+    """Export paper references in RIS, CSV, JSON, or BibTeX format."""
     lines: list[str] = []
 
     if format == "ris":
@@ -859,13 +819,7 @@ async def paper_lookup(
     query: str,
     max_results: int = 5,
 ) -> dict[str, Any]:
-    """Find a paper by DOI, arXiv ID, Semantic Scholar ID, or title.
-
-    Auto-detects whether query is an ID or title string.
-    IDs (10.xxxx/..., 2305.14283, etc.) → direct lookup.
-    Title strings → search across Semantic Scholar and CrossRef.
-    Returns detailed metadata including abstract, authors, citation count.
-    """
+    """Find a paper by DOI, arXiv ID, Semantic Scholar ID, or title."""
     results: list[dict[str, Any]] = []
     errors: dict[str, str] = {}
 
@@ -984,15 +938,7 @@ async def read_paper(
     save_path: str = "./downloads",
     use_scihub: bool = True,
 ) -> dict[str, Any]:
-    """Download and extract full text from a paper.
-
-    USE extract_sections FIRST for selective reading (saves ~80% tokens).
-    Only use this when you need the complete document (e.g., for detailed analysis, figures, or appendices).
-
-    source = "auto" auto-detects from paper_id format. Explicit sources: arxiv, semantic, biorxiv, medrxiv, iacr, openaire, citeseerx, doaj, base, zenodo, hal.
-    Falls back through: native source -> OA repositories -> Unpaywall -> Sci-Hub (when enabled).
-    Returns extracted text content plus metadata.
-    """
+    """Download and extract full text from a paper. Falls back through OA repositories, Unpaywall, Sci-Hub."""
     if source == "auto":
         source = _detect_source_from_paper({
             "arxiv_id": paper_id, "doi": doi, "paper_id": paper_id,
@@ -1192,27 +1138,7 @@ async def extract_sections(
     doi: str = "",
     title: str = "",
 ) -> dict[str, Any]:
-    """Extract specific sections from a paper's full text (RECOMMENDED for reading papers).
-
-    Returns only the sections you need, saving ~80% of tokens compared to read_paper.
-    Use this BEFORE read_paper. Only use read_paper when you need the complete document.
-
-    Available sections: abstract, introduction, methods, results, discussion,
-    conclusions, related_work, limitations, future_work.
-
-    Typical workflow:
-    1. search_literature(query="...")  → find papers
-    2. extract_sections(paper_id, sections=["abstract","methods"])  → read selectively
-    3. compare_papers(papers, aspects=["method","finding"])  → compare across papers
-    4. read_paper(paper_id)  → only if full text is truly needed
-
-    Args:
-        paper_id: arXiv ID, DOI, or other paper identifier
-        sections: Which sections to extract (default: abstract + methods + conclusions)
-        source: Source to read from (auto-detect if omitted)
-        doi: DOI for fallback resolution
-        title: Title for fallback resolution
-    """
+    """Extract specific sections (abstract, intro, methods, results, discussion, conclusions, related_work, limitations, future_work) without reading the full paper."""
     if sections is None:
         sections = ["abstract", "methods", "conclusions"]
 
@@ -1247,15 +1173,7 @@ async def compare_papers(
     papers: list[dict[str, Any]],
     aspects: list[str] | None = None,
 ) -> dict[str, Any]:
-    """Compare multiple papers side-by-side on specific aspects.
-
-    Reads each paper and extracts the requested aspects for comparison.
-    Returns a structured comparison table.
-
-    Args:
-        papers: List of paper dicts (need paper_id + title at minimum)
-        aspects: What to compare (default: ["method", "finding", "limitation"])
-    """
+    """Compare multiple papers side-by-side on specific aspects (method, finding, limitation, etc). Returns a comparison table."""
     if aspects is None:
         aspects = ["method", "finding", "limitation"]
 
